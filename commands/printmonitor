@@ -13,7 +13,7 @@ do
 	date=$(date)
 	gstatus=$(statusparser)
 	pdate=$(date)
-	wget --quiet http://localhost:8080/?action=snapshot -O pics/$(echo $pdate | tr ' ' -).jpg
+	wget --quiet http://localhost:8080/webcam/?action=snapshot -O pics/$(echo $pdate | tr ' ' -).jpg
 	status=$(curl -s http://$ip/rr_status?type=3)
 
 	echo $date
