@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# Parses the Duet status output
+#
+
+config=~/.duet
+. $config
+
+status=$(curl -s "http://$ip/rr_status?type=3" | tr -d \"\{\}\[\])
+
+if [ "$(echo $status | egrep '^status:P')" ]
+then
+	percent=$(echo $status | egrep -o 'fractionPrinted:[0-9.]*' | sed 's,fractionPrinted:\([0-9.]*\),Progress: \1,')
+	bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*,active:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),Bed: \1 Target: \2,')
+	head_temp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),Head: \1 Target: \2,')
+	layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),Layer: \1,')
+	echo Printing - $bed_temp $head_temp $layer $percent
+else
+	bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's,temps:bed:active:,,' -e 's,\([0-9.]*\),Bed: \1,')
+	echo "Printer is idle" $bed_temp
+fi

@@ -1,0 +1,35 @@
+#!/bin/sh
+###
+#
+# Provides basic CLI print controls - pause, resume, stop, etc
+#
+###
+
+config=~/.duet
+. $config
+
+command="$1"
+
+case "$command" in
+	pause)
+	 	var=$(curl -s "http://$ip/rr_gcode?gcode=M226")
+		;;
+	resume)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M24")
+		;;
+	cancel)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M1")
+		;;
+	ledon)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M106%20P2%20S255")
+		;;
+	ledoff)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M106%20P2%20S0")
+		;;
+	led50)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M106%20P2%20S112")
+		;;
+	*)
+		echo "Usage: $0 {pause|resume|cancel|ledon|ledoff}"
+		exit 1
+esac

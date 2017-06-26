@@ -1,0 +1,48 @@
+#!/bin/sh
+
+###
+#
+# Load Global Variables
+#
+###
+
+config=~/.duet
+. $config
+
+###
+#
+# Set local stuff
+#
+###
+
+path="$@"
+url=http://$ip/rr_filelist?dir=
+
+###
+#
+# Let's do things
+#
+###
+
+urlencode() {
+	python -c 'import urllib, sys; print urllib.quote(sys.argv[1], sys.argv[2])' "$1" "$urlencode_safe"
+}
+
+path=$(urlencode_safe='/' urlencode "$path")
+
+data=$(curl -s $url$path)
+
+dir=$(echo $data | cut -d \[ -f 1 | cut -d \" -f 4)
+if [ "$dir" = / ]
+then
+	echo "$dir":
+else
+	echo "$dir"/:
+fi
+
+files=$(echo $data | cut -d \[ -f 2 | tr } '\n' | tr -d \{\}\"\])
+
+oldifs="$IFS"
+IFS=' '
+
+echo "$files" | sed 's/^,//' | sed -e 's/type:d,name:\(.*\),size:0.*/\1\//' -e 's/type:f,name:\(.*\),size:\([0-9]*\).*/\1~\2/' | column -ts '~'

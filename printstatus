@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Print Logger - logs print jobs on a minute by minute basis
+#
+
+type=${1:-2}
+
+config=~/.duet
+. $config
+
+log=mylog.$$
+
+status=$(curl -s http://$ip/rr_status?type=$type)
+
+echo $status
+
