@@ -1,3 +1,24 @@
+##
+#
+# duetmonitor configuration file
+#
+##
+
+# Set your Duet's IP here
 ip=10.0.0.198
-interval=5
+
+# Default polling interval for printmonitor, in seconds
+poll=5
+
+# Polling interval while printing; also sets the snapshot frequency if timed
+print_poll=1
+
+# Location that images are saved for snapshots
 imgdir=~/pics
+
+# Are snapshots per-layer or timed?
+snapshot=layer
+#snapshot=time
+
+# Output to a CSV file? Options are yes, no, and both. Both gets a normal log and a CSV log.
+csv=both

@@ -6,23 +6,96 @@
 config=~/.duet
 . $config
 
+loud=1
+debug=1
+
+log=print.$$
+pdate=$(date | tr ' ' -)
+
+
+if [ ! -d "$imgdir" ]; then
+	mkdir "$imgdir"
+fi
+
+if [ "$csv" ]; then
+	csvlog=print.$pdate.csv
+	echo "Bed Temp,Bed Target,Head Temp,Head Target,Layer,Percent" > $csvlog
+fi
+
 while true
 do
-	log=mylog.$$
-
 	date=$(date)
-	gstatus=$(statusparser)
-	pdate=$(date)
-	wget --quiet http://localhost:8080/webcam/?action=snapshot -O pics/$(echo $pdate | tr ' ' -).jpg
+	gstatus=$(statusparser | grep -v CSV)
+	cstatus=$(statusparser | grep CSV)
+	cstatus=${cstatus#CSV-}
 	status=$(curl -s http://$ip/rr_status?type=3)
 
-	echo $date
-	echo $gstatus
+	if [ "$(echo $gstatus | grep Printing )
+	then
+		printing=1
+		layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),\1,')
+		htemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\1')
+		ttemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\2')
+	else
+		printing=0
+	fi
 
-	echo $date >> $log
+	if [ $printing ]
+	then
+		if [ "$snapshot" = timed ]
+		then
+			wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$pdate.jpg
+		elif [ "$snapshot = layer ]
+		then
+			if [ "$layer" != "$oldlayer" ]
+			then
+				#pause print
+				printconntrol pause
+				sleep 2
+				wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$pdate.jpg
+				printcontrol resume
+				#resume print
+				oldlayer=$layer
+			fi
+		fi
 
-	echo $status >> $log
-	echo $gstatus >> $log
+		if [ "$tempmonitor" ]
+		then
+			difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
+			if [ "$difference" -ge 20 ]
+			then
+				printcontrol pause
+				#notify of pause
+			fi
+		if
 
-	sleep 60
+		if [ "$loud" = 1]
+		then
+			echo $date $gstatus
+		fi
+
+		case $csv in
+			yes)
+				echo $cstats >> $csvlog
+				;;
+			both)
+				echo $cstats >> $csvlog
+				echo $date $gstatus >> log
+				;;
+			no)
+				echo $date $gstatus >> log
+                                ;;
+		esac
+
+		if [ "$debug" = 1 ]
+		then
+			echo $status >> $log
+		fi
+	fi
+
+	if [ "$printing" = 1]; then
+		sleep $print_poll; else
+		sleep $poll
+	fi
 done
+
