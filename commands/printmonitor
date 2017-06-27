@@ -62,7 +62,7 @@ do
 		if [ "$tempmonitor" ]
 		then
 			difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
-			if [ "$difference" -ge 20 ]
+			if [ "$difference" -ge 10 ]
 			then
 				printcontrol pause
 				#notify of pause

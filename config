@@ -22,3 +22,6 @@ snapshot=layer
 
 # Output to a CSV file? Options are yes, no, and both. Both gets a normal log and a CSV log.
 csv=both
+
+# Enable temperature monitoring - pauses prints if the head is off by more than a degree.
+tempmonitor=1
