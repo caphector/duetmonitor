@@ -1,5 +1,5 @@
 # duetmonitor
-Tools to remotely monitor and control 3D printer with a Duet-based control board.
+Tools to remotely monitor and control 3D printer with a Duet-based control board. These expect to be placed in your $PATH; I recommend putting them in ~/bin/ on a machine running Octoprint.
 
 These scripts source ~/.duet to get the IP address of the printer; this will be used for any global configuration going forward.
 
