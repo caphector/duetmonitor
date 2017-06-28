@@ -40,7 +40,7 @@ do
 		printing=0
 	fi
 
-	if [ $printing ]
+	if [ "$printing" = 1 ]
 	then
 		if [ "$snapshot" = timed ]
 		then
