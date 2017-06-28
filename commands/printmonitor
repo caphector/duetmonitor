@@ -67,7 +67,7 @@ do
 				printcontrol pause
 				#notify of pause
 			fi
-		if
+		fi
 
 		if [ "$loud" = 1 ]
 		then
@@ -93,7 +93,7 @@ do
 		fi
 	fi
 
-	if [ "$printing" = 1]; then
+	if [ "$printing" = 1 ]; then
 		sleep $print_poll; else
 		sleep $poll
 	fi
