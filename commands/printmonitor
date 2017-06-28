@@ -10,8 +10,8 @@ loud=1
 debug=1
 
 log=print.$$
-pdate=$(date | tr ' ' -)
-
+pdate=$(date +%m-%d-%y-%H:%M:%S)
+date=$pdate
 
 if [ ! -d "$imgdir" ]; then
 	mkdir "$imgdir"
@@ -24,33 +24,33 @@ fi
 
 while true
 do
-	date=$(date)
 	gstatus=$(statusparser | grep -v CSV)
-	cstatus=$(statusparser | grep CSV)
-	cstatus=${cstatus#CSV-}
-	status=$(curl -s http://$ip/rr_status?type=3)
+	cstatus=$(statusparser | grep CSV |  tr -d "A-Za-z: -" | sed -e s-,,-,-g -e 's-^,--')
+	status=$(curl -s http://$ip/rr_status?type=3 | tr -d \"\{\}\[\])
 
 	if [ "$(echo $gstatus | grep Printing )" ]
 	then
 		printing=1
 		layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),\1,')
-		htemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\1')
-		ttemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\2')
+		htemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\1,')
+		ttemp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) \([0-9.]*\),\2,')
 	else
 		printing=0
 	fi
 
-	if [ "$printing" = 1 ]
+	if [ "$printing" = 1 ] # This might want to be a different script - set local variables and let monitor be the monitoring daemon
 	then
-		if [ "$snapshot" = timed ]
+		#date=$(date +%m-%d-%y-%H:%M:%S)
+		log=print.$date.log
+		if [ "$snapshot" = timed ] # Spin this off into a different script
 		then
-			wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$pdate.jpg
+			wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$date.jpg
 		elif [ "$snapshot" = layer ]
 		then
 			if [ "$layer" != "$oldlayer" ]
 			then
 				#pause print
-				printconntrol pause
+				printcontrol pause
 				sleep 2
 				wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$pdate.jpg
 				printcontrol resume
@@ -59,7 +59,7 @@ do
 			fi
 		fi
 
-		if [ "$tempmonitor" ]
+		if [ "$tempmonitor" ] # Different script
 		then
 			difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
 			if [ "$difference" -ge 10 ]
@@ -76,14 +76,14 @@ do
 
 		case $csv in
 			yes)
-				echo $cstats >> $csvlog
+				echo $cstatus >> $csvlog
 				;;
 			both)
-				echo $cstats >> $csvlog
-				echo $date $gstatus >> log
+				echo $cstatus >> $csvlog
+				echo $date $gstatus >> $log
 				;;
 			no)
-				echo $date $gstatus >> log
+				echo $date $gstatus >> $log
                                 ;;
 		esac
 
