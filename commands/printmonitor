@@ -30,7 +30,7 @@ do
 	cstatus=${cstatus#CSV-}
 	status=$(curl -s http://$ip/rr_status?type=3)
 
-	if [ "$(echo $gstatus | grep Printing )
+	if [ "$(echo $gstatus | grep Printing )" ]
 	then
 		printing=1
 		layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),\1,')
@@ -45,7 +45,7 @@ do
 		if [ "$snapshot" = timed ]
 		then
 			wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$pdate.jpg
-		elif [ "$snapshot = layer ]
+		elif [ "$snapshot" = layer ]
 		then
 			if [ "$layer" != "$oldlayer" ]
 			then
@@ -69,7 +69,7 @@ do
 			fi
 		if
 
-		if [ "$loud" = 1]
+		if [ "$loud" = 1 ]
 		then
 			echo $date $gstatus
 		fi
