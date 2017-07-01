@@ -1,0 +1,31 @@
+confcheck () {
+	config=~/.duet
+	if [ ! -f "$config" ]
+	then
+		echo "Config file not found. Please copy the file config from the duetmonitor folder to ~/.duet."
+		exit 1
+	fi
+}
+
+statusparser () {
+	status=$(curl -s "http://$ip/rr_status?type=3" | tr -d \"\{\}\[\])
+
+	if [ "$(echo $status | egrep '^status:P')" ]
+	then
+		bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*,active:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) [0-9.]*,\1,')
+		bed_target=$(echo $status | egrep -o "temps:bed:current:[0-9.]*,active:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's-,active:- -' -e 's,[0-9.]* \([0-9.]*\),\1,')
+		head_temp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" | sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) [0-9.]*,\1,')
+		head_target=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,[0-9.]* \([0-9.]*\),\1,')
+		layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),\1,')
+		percent=$(echo $status | egrep -o 'fractionPrinted:[0-9.]*' | sed 's,fractionPrinted:\([0-9.]*\),\1,')
+		echo "Printing - Bed: $bed_temp Target: $bed_target Nozzle: $head_temp Target: $head_temp Layer: $layer Percent: $percent"
+		echo "CSV-$layer,$bed_temp,$bed_target,$head_temp,$head_target,$percent"
+		echo "RAW-$status"
+	elif [ "$(echo $status | egrep '^status:I')" ]
+	then
+		bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's,temps:bed:active:,,' -e 's,\([0-9.]*\),\1,')
+		echo "Idle" Bed: $bed_temp
+	else [ ! "$status" ]
+		echo "EMPTY"
+	fi
+}

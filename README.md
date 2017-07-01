@@ -11,10 +11,9 @@ ledon/ledoff - my printer has LEDs hooked up to a fan header. This turns the LED
 
 printcontol - functionally similar to a service start/stop script. Can pause/resume/cancel a print and set LEDs to on/off/50%.
 
-printmonitor - "Daemon" in the form of a looping script. Fetches status info from the Duet, runs it through statusparser, and snaps a photo with an OctoPrint-connected camera. Currently expects the camera on localhost.
+printmonitor - "Daemon" in the form of a looping script. Calls handle_printing for all the interesting stuff.
 
 printstatus - Logs status, but different status than printmonitor.
 
-statusparser - parses the Duet JSON object and prints out the bed temp, head temp, currentl layer, and percent completion. More data will be added in the future, including estimated time to completion.
 
 I'm working on making this a more complete suite - I'd like to execute macros direct off the Duet via CLI, manage files, have persistient logs of print statistics, and add some form of timelapse feature.

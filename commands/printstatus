@@ -1,12 +1,14 @@
 #!/bin/sh
 #
-# Print Logger - logs print jobs on a minute by minute basis
+# Print Logger - logs print jobs on a minute by minute basis - just grabs raw status and prints it to stdout. 
 #
 
 type=${1:-2}
 
-config=~/.duet
-. $config
+duetdir=$(dirname "$(readlink -f "$0")")
+source $duetdir/functions
+
+confcheck
 
 log=mylog.$$
 

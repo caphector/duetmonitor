@@ -8,10 +8,10 @@
 ip=10.0.0.198
 
 # Default polling interval for printmonitor, in seconds
-poll=5
+poll=30
 
 # Polling interval while printing; also sets the snapshot frequency if timed
-print_poll=1
+print_poll=5
 
 # Location that images are saved for snapshots
 imgdir=~/pics
