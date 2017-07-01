@@ -15,6 +15,8 @@ print_poll=5
 
 # Location that images are saved for snapshots
 imgdir=~/pics
+logdir=~/prints
+
 
 # Are snapshots per-layer or timed? Per-layer is not recommended for vase mode.
 snapshot=layer
