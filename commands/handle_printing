@@ -43,8 +43,6 @@ cstatus=${cstatus#CSV-}
 
 if [ "$debug" = 1 ]
 then
-	echo head temp: $htemp
-	echo target temp: $ttemp
 	echo layer: $layer
 	echo Raw status: $status
 	echo CSV: $cstatus
@@ -60,7 +58,7 @@ else
 	writevars
 fi
 
-if [ "$snapshot" = timed ]
+if [ "$snapshot" = timed ] # Not really tested yet
 then
 	wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
 elif [ "$snapshot" = layer ]
@@ -69,7 +67,7 @@ then
 	then
 		#pause print
 		printcontrol pause
-		sleep 2
+		sleep 1
 		wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
 		printcontrol resume
 		#resume print
@@ -77,7 +75,7 @@ then
 	fi
 fi
 
-if [ "$tempmonitor" ] # Function? Also, doesn't work yet. Need to look into that.
+if [ "$tempmonitor" ] # Untested so far
 then
 	difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
 	if [ "$difference" -ge 10 ]
