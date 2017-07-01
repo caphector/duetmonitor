@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###
 #
 # Called by printmonitor to execute tasks during a print - should only be called when a print is active
@@ -28,10 +28,10 @@ ttemp=$(echo $cstatus | awk -F',' '{print $4}')
 layer=$(echo $cstatus | awk -F',' '{print $5}')
 
 startdate=$1							#This date is the printing_started time from printcontrol.
-log=print.$startdate.log
+log=$logdir/print.$startdate.log
 
 if [ "$csv" ]; then
-	csvlog=$startdate.csv
+	csvlog=$logdir/$startdate.csv
 	if [ -f "$csvlog" ]
 	then
 		echo "Layer,Bed Temp,Bed Target,Head Temp,Head Target,Percent" > $csvlog

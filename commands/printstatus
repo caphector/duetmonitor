@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Print Logger - logs print jobs on a minute by minute basis - just grabs raw status and prints it to stdout. 
 #

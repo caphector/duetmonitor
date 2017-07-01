@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###
 #
 # Provides basic CLI print controls - pause, resume, stop, etc

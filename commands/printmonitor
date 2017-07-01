@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Print Logger - logs print jobs on a minute by minute basis
 #
@@ -18,18 +18,22 @@ if [ ! -d "$imgdir" ]; then
 	mkdir "$imgdir"
 fi
 
+if [ ! -d "$logdir" ]; then
+	mkdir "$logdir"
+fi
+
 while true
 do
 	allstats=$(statusparser)
 
-	gstatus=$(echo $allstats | egrep 'Printing|Idle|EMPTY')
+	gstatus=$(echo "$allstats" | egrep 'Printing|Idle|EMPTY')
 
 	if [ "$(echo $gstatus | grep Printing )" ] && [ "$printing" = 0 ]
 	then
 		printing=1
 		print_started=$(date +%m-%d-%y-%H:%M:%S)
 		echo "Detected new print at $print_started"
-	elif "$(echo $gstatus | egrep 'Idle )" ]
+	elif "$(echo $gstatus | egrep 'Idle' )" ]
 	then
 		printing=0
 	elif [ "$gstatus" = EMPTY ]
