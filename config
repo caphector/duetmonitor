@@ -5,7 +5,7 @@
 ##
 
 # Set your Duet's IP here
-ip=10.0.0.198
+ip=10.0.0.1
 
 # Default polling interval for printmonitor, in seconds
 poll=30
@@ -16,7 +16,6 @@ print_poll=5
 # Location that images are saved for snapshots
 imgdir=~/pics
 logdir=~/prints
-
 
 # Are snapshots per-layer or timed? Per-layer is not recommended for vase mode.
 snapshot=layer

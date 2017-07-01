@@ -4,6 +4,8 @@ confcheck () {
 	then
 		echo "Config file not found. Please copy the file config from the duetmonitor folder to ~/.duet."
 		exit 1
+	else
+		source $config
 	fi
 }
 
