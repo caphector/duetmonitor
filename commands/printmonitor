@@ -33,7 +33,7 @@ do
 		printing=1
 		print_started=$(date +%m-%d-%y-%H:%M:%S)
 		echo "Detected new print at $print_started"
-	elif "$(echo $gstatus | egrep 'Idle' )" ]
+	elif [ "$(echo $gstatus | egrep 'Idle' )" ]
 	then
 		printing=0
 	elif [ "$gstatus" = EMPTY ]
