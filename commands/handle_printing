@@ -9,6 +9,7 @@ startdate=$1
 duetdir=$(dirname "$(readlink -f "$0")")
 source $duetdir/functions
 ptemp=/tmp/$startdate.tmp
+touch $ptemp
 source $ptemp
 
 writevars () {
@@ -16,7 +17,6 @@ writevars () {
 	mv $ptemp.$$ $ptemp
 }
 
-echo $ptemp
 confcheck
 
 debug=0
@@ -48,10 +48,10 @@ cstatus=${cstatus#CSV-}
 
 if [ "$debug" = 1 ]
 then
-	echo head temp: $htemp
-	echo target temp: $ttemp
-	echo layer: $layer
-	echo Raw status: $status
+	echo Head temp: $htemp
+	echo Target temp: $ttemp
+	echo Layer: $layer
+	echo Status: $status
 	echo CSV: $cstatus
 fi
 
@@ -66,9 +66,8 @@ else
 fi
 
 if [ "$snapshot" = timed ]
-$then
-	echo "Timed SNAP" > $imgdir/$startdate-$duetm_loop.jpg
-#	wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
+then
+	wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
 elif [ "$snapshot" = layer ]
 then
 	if [ "$debug" = 1 ]
@@ -95,15 +94,15 @@ debug=1
 if [ "$tempmonitor" ] # Function? Also, doesn't work yet. Need to look into that.
 then
 	difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
-	if [ "$debug" = 1 ]
-	then
-		echo target: $ttemp head: $htemp dif: $difference
-	fi
 	if [ "$difference" -ge 10 ]
 	then
+		if [ "$debug" = 1 ]
+		then
+			echo target: $ttemp head: $htemp dif: $(python -c "print $difference/10") at $(date)
+		fi
 		echo "Temp warning!"
 		#notify of pause
-		echo ${status#RAW-}
+#		echo ${status#RAW-}
 	fi
 fi
 

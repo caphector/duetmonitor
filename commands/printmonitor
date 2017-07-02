@@ -8,8 +8,9 @@ source $duetdir/functions
 
 confcheck
 
-loud=1
-debug=1
+loud=0
+debug=0
+printing=0
 
 log=print.$$
 date=$(date +%m-%d-%y-%H:%M:%S)
@@ -25,7 +26,6 @@ fi
 while true
 do
 	allstats=$(statusparser)
-
 	gstatus=$(echo "$allstats" | egrep 'Printing|Idle|EMPTY')
 
 	if [ "$(echo $gstatus | grep Printing )" ] && [ "$printing" = 0 ]
@@ -38,7 +38,7 @@ do
 		printing=0
 	elif [ "$gstatus" = EMPTY ]
 	then
-		echo "No data from the printer; polling less freqently. When communication resumes we will treat it as a new print for logging and snapshot purposes."
+		echo "No data from printer; polling less freqently. When communication resumes we will treat it as a new print for logging and snapshot purposes."
 		printing=0
 	fi
 
