@@ -5,6 +5,7 @@
 #
 ###
 
+startdate=$1
 duetdir=$(dirname "$(readlink -f "$0")")
 source $duetdir/functions
 ptemp=/tmp/$startdate.tmp
@@ -15,27 +16,31 @@ writevars () {
 	mv $ptemp.$$ $ptemp
 }
 
+echo $ptemp
 confcheck
 
-debug=1
+debug=0
+loud=0
 
 allstats=$(statusparser)
-gstatus=$(echo $allstats | egrep 'Printing')
-cstatus=$(echo $allstats | grep CSV)
-status=$(echo $allstats | grep RAW)
-htemp=$(echo $cstatus | awk -F',' '{print $3}')
-ttemp=$(echo $cstatus | awk -F',' '{print $4}')
-layer=$(echo $cstatus | awk -F',' '{print $5}')
+gstatus=$(echo "$allstats" | egrep 'Printing')
+cstatus=$(echo "$allstats" | grep CSV)
+status=$(echo "$allstats" | grep RAW)
+htemp=$(echo $cstatus | awk -F',' '{print $4}')
+ttemp=$(echo $cstatus | awk -F',' '{print $5}')
+layer=$(echo $cstatus | awk -F',' '{print $1}')
+layer=${layer#CSV-}
 
 startdate=$1							#This date is the printing_started time from printcontrol.
 log=$logdir/print.$startdate.log
 
-if [ "$csv" ]; then
-	csvlog=$logdir/$startdate.csv
-	if [ -f "$csvlog" ]
+if [ "$csv" ]
 	then
-		echo "Layer,Bed Temp,Bed Target,Head Temp,Head Target,Percent" > $csvlog
-	fi
+		csvlog=$logdir/$startdate.csv
+		if [ ! -f "$csvlog" ]
+		then
+			echo "Layer,Bed Temp,Bed Target,Head Temp,Head Target,Percent" > $csvlog
+		fi
 fi
 
 status=${status#RAW-}
@@ -43,6 +48,8 @@ cstatus=${cstatus#CSV-}
 
 if [ "$debug" = 1 ]
 then
+	echo head temp: $htemp
+	echo target temp: $ttemp
 	echo layer: $layer
 	echo Raw status: $status
 	echo CSV: $cstatus
@@ -58,30 +65,45 @@ else
 	writevars
 fi
 
-if [ "$snapshot" = timed ] # Not really tested yet
-then
-	wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
+if [ "$snapshot" = timed ]
+$then
+	echo "Timed SNAP" > $imgdir/$startdate-$duetm_loop.jpg
+#	wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
 elif [ "$snapshot" = layer ]
 then
-	if [ "$layer" != "$oldlayer" ]
+	if [ "$debug" = 1 ]
+	then
+		echo "Per-layer snapshot:"
+		echo Layer: $layer Old: $duetm_oldlayer
+	fi
+	if [ "$layer" != "$duetm_oldlayer" ]
 	then
 		#pause print
 		printcontrol pause
 		sleep 1
 		wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
+#		echo "Layer Snap" > $imgdir/$startdate-$duetm_loop.jpg
 		printcontrol resume
 		#resume print
 		duetm_oldlayer=$layer
+		writevars
 	fi
 fi
 
-if [ "$tempmonitor" ] # Untested so far
+debug=1
+
+if [ "$tempmonitor" ] # Function? Also, doesn't work yet. Need to look into that.
 then
 	difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
+	if [ "$debug" = 1 ]
+	then
+		echo target: $ttemp head: $htemp dif: $difference
+	fi
 	if [ "$difference" -ge 10 ]
 	then
 		echo "Temp warning!"
 		#notify of pause
+		echo ${status#RAW-}
 	fi
 fi
 
@@ -96,7 +118,7 @@ case $csv in
 		;;
 	both)
 		echo $cstatus >> $csvlog
-		echo $startdate $gstatus >> $log
+		echo $(date +%m-%d-%y-%H:%M:%S) $gstatus >> $log
 		;;
 	no)
 		echo $startdate $gstatus >> $log
@@ -107,3 +129,5 @@ if [ "$debug" = 1 ]
 then
 	echo $allstats >> $log.debug
 fi
+
+writevars
