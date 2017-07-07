@@ -1,7 +1,7 @@
 # duetmonitor
-Tools to monitor and log print data with a Rasberry Pi. It logs basic print information to CSV. The script will detect prints starting, then start polling more frequently and take photos with a webcam.
+Monitor and log print data with a Rasberry Pi; this logs basic print information to CSV. The script will detect prints starting,  start polling more frequently and take photos for a timelapse.
 
-To install check out duetmonitor and install the scripts in your $PATH. Edit the config file and copy it to ~/.duet. The config options are documented in the config file. 
+To install check out duetmonitor and install the scripts in your $PATH; I recommend ~/bin/. Update ``config``  and copy it to ~/.duet. Options are documented in the config file. 
 
 Once configured run ``printmonitor`` and start a print. The script will output "Detected new print at [date of print starting]". This triggers taking photos for timelapse and creates a CSV with print data. Print data is currently limited to Layer, Bed Temp, Bed Target, Head Temp, Head Target, and Percent Complete but will be expanded.
 
@@ -23,4 +23,4 @@ Bugs:
 
 * No actions are triggered when prints finish
 * Does not handle a connection interruption during a print - it will consider this a new print
-* API usage may interfere with Duet Web GUI connectivity since the firmware can only handle one API connection at a time
+* May interfere with Duet Web GUI while polling
