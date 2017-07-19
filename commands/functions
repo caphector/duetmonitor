@@ -45,9 +45,8 @@ statusparser () {
 		then
 			echo "Paused - Bed: $bed_temp Target: $bed_target Nozzle: $head_temp Target: $head_temp Layer: $layer Percent: $percent"
 		fi
-		echo "CSV-$layer,$bed_temp,$bed_target,$head_temp,$head_target,$percent,$layer_time,$coords,$ctool,$extruded,$fanp,$speed,$extf,$seq,$fanrpm,$ptime,\
-$extrRaw,$first_duration,$first_height,$warm,$file_left,$filament_left,$layer_left"
-		echo "RAW-$status"
+		echo "CSV-\"$layer\",\"$bed_temp\",\"$bed_target\",\"$head_temp\",\"$head_target\",\"$percent\",\"$layer_time\",\"$coords\",\"$ctool\",\"$extruded\",\"$fanp\",\"$speed\",\"$extf\",\"$seq\",\"$fanrpm\",\"$ptime\",\
+\"$extrRaw\",\"$first_duration\",\"$first_height\",\"$warm\",\"$file_left\",\"$filament_left\",\"$layer_left\""
 	elif [ "$(echo $status | egrep '^status:I')" ]
 	then
 		bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's,temps:bed:active:,,' -e 's,\([0-9.]*\),\1,')
@@ -59,7 +58,7 @@ $extrRaw,$first_duration,$first_height,$warm,$file_left,$filament_left,$layer_le
 
 get_val() {
 	id=$1
-	echo $status | egrep -o "$id:[0-9,.]*" | sed -e "s/$id://" -e 's/,$//' -e 's/,/\\,/g'
+	echo $status | egrep -o "$id:[0-9,.]*" | sed -e "s/$id://" -e 's/,$//'
 }
 
 
