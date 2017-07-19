@@ -8,9 +8,19 @@ source $duetdir/functions
 
 confcheck
 
+mtemp=/tmp/printmonitor.tmp
+touch $mtemp
+source $mtemp
+
+writevars () {
+        declare -p | grep duetm_ > $mtemp.$$
+        mv $mtemp.$$ $mtemp
+}
+
+
 loud=0
 debug=0
-printing=0
+duetm_printing=0
 
 log=print.$$
 date=$(date +%m-%d-%y-%H:%M:%S)
@@ -26,28 +36,46 @@ fi
 while true
 do
 	allstats=$(statusparser)
-	gstatus=$(echo "$allstats" | egrep 'Printing|Idle|EMPTY')
+	gstatus=$(echo "$allstats" | egrep 'Printing|Idle|EMPTY|Paused')
 
-	if [ "$(echo $gstatus | grep Printing )" ] && [ "$printing" = 0 ]
+	if [ "$(echo $gstatus | grep Printing )" ] && [ "$duetm_printing" = 0 ]
 	then
-		printing=1
-		print_started=$(date +%m-%d-%y-%H:%M:%S)
-		echo "Detected new print at $print_started"
+		duetm_printing=1
+		duetm_print_started=$(date +%m-%d-%y-%H:%M:%S)
+		echo "Detected new print at $duetm_print_started"
+		writevars
+	elif [ "$(echo $gstatus | egrep 'Printing|Paused' )" ] && [ "$duetm_printing" = 2 ]
+	then
+		echo "Resuming print from $duetm_print_started. Some logging and snapshots may have been missed"
+		duetm_print_started=$duetm_print_started
+		duetm_printing=1
+		writevars
+	elif [ "$(echo $gstatus | egrep 'Idle' )" ] && [ "$duetm_printing" = 1 ]
+	then
+		echo "Print started at $duetm_print_started finished. Creating timelapse and deleting source files."
+		echo "imgdir=$imgdir" > /tmp/$duetm_print_started
+		echo "duetdir=$duetdir" >> /tmp/$duetm_print_started
+		bash -vx finish_print $duetm_print_started
+		unset duetm_print_started
+		duetm_printing=0
 	elif [ "$(echo $gstatus | egrep 'Idle' )" ]
 	then
-		printing=0
-	elif [ "$gstatus" = EMPTY ]
+		duetm_printing=0
+	elif [ "$gstatus" = EMPTY -a "$duetm_print_started" ]
 	then
-		echo "No data from printer; polling less freqently. When communication resumes we will treat it as a new print for logging and snapshot purposes."
-		printing=0
+		echo "No data from printer; polling less freqently. We will try to resume $duetm_print_started"
+		duetm_printing=2
+	elif [ "$gstatus" = EMPTY -a ! "$duetm_print_started" ]
+	then
+		echo "No data from printer. Polling less frequently."
 	fi
 
-	if [ "$printing" = 1 ] # Handle_printing actually does stuff; this is a lightweight script to poll and monitor
+	if [ "$duetm_printing" = 1 ] # Handle_printing actually does stuff; this is a lightweight script to poll and monitor
 	then
-		handle_printing $print_started
+		handle_printing $duetm_print_started
 	fi
 
-	if [ "$printing" = 1 ]
+	if [ "$duetm_printing" = 1 ]
 	then
 		sleep $print_poll
 	else

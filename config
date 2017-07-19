@@ -8,14 +8,19 @@
 ip=10.0.0.1
 
 # Default polling interval for printmonitor, in seconds
-poll=30
+poll=90
 
 # Polling interval while printing; also sets the snapshot frequency if timed
-print_poll=5
+print_poll=10
 
-# Location that images are saved for snapshots
+# Location that images are stored for timelapses
 imgdir=~/pics
+
+# Location log files are written to
 logdir=~/prints
+
+# Location videos are written to
+viddir=~/vids
 
 # Are snapshots per-layer or timed? Per-layer is not recommended for vase mode.
 snapshot=layer
@@ -24,5 +29,5 @@ snapshot=layer
 # Output to a CSV file? Options are yes, no, and both. Both gets a normal log and a CSV log.
 csv=both
 
-# Enable temperature monitoring - pauses prints if the head is off by more than a degree.
-tempmonitor=1
+# Enable temperature monitoring - prints a temp warning if the hot end is off too far.
+tempmonitor=0

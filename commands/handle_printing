@@ -30,8 +30,9 @@ htemp=$(echo $cstatus | awk -F',' '{print $4}')
 ttemp=$(echo $cstatus | awk -F',' '{print $5}')
 layer=$(echo $cstatus | awk -F',' '{print $1}')
 layer=${layer#CSV-}
+status=${status#RAW-}
+cstatus=${cstatus#CSV-}
 
-startdate=$1							#This date is the printing_started time from printcontrol.
 log=$logdir/print.$startdate.log
 
 if [ "$csv" ]
@@ -39,12 +40,10 @@ if [ "$csv" ]
 		csvlog=$logdir/$startdate.csv
 		if [ ! -f "$csvlog" ]
 		then
-			echo "Layer,Bed Temp,Bed Target,Head Temp,Head Target,Percent" > $csvlog
+			echo "Layer,Bed Temp,Bed Target,Head Temp,Head Target,Percent Complete,Current Layer Time,Head Coordinates,Current Tool,Extruded,Fan Percent,Speed Factor,Extrusion Factor,Sequence,Fan RPM,Print Time,Raw Extrusion,First Layer Duration,First Layer Height,Warmup Time,File Left,Filament Left,Layer Left" > $csvlog
 		fi
 fi
 
-status=${status#RAW-}
-cstatus=${cstatus#CSV-}
 
 if [ "$debug" = 1 ]
 then
@@ -81,7 +80,6 @@ then
 		printcontrol pause
 		sleep 1
 		wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
-#		echo "Layer Snap" > $imgdir/$startdate-$duetm_loop.jpg
 		printcontrol resume
 		#resume print
 		duetm_oldlayer=$layer
@@ -89,9 +87,7 @@ then
 	fi
 fi
 
-debug=1
-
-if [ "$tempmonitor" ] # Function? Also, doesn't work yet. Need to look into that.
+if [ "$tempmonitor" = 1 ] # Function? Also, doesn't work yet. Need to look into that.
 then
 	difference=$(python -c "print $ttemp-$htemp" | tr -d .-)
 	if [ "$difference" -ge 10 ]

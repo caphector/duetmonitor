@@ -12,16 +12,41 @@ confcheck () {
 statusparser () {
 	status=$(curl -s "http://$ip/rr_status?type=3" | tr -d \"\{\}\[\])
 
-	if [ "$(echo $status | egrep '^status:P')" ]
+	if [ "$(echo $status | egrep '^status:P')" ] || [ "$(echo $status | egrep '^status:S')" ] 
 	then
 		bed_temp=$(echo $status | egrep -o "temps:bed:current:[0-9.]*,active:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) [0-9.]*,\1,')
 		bed_target=$(echo $status | egrep -o "temps:bed:current:[0-9.]*,active:[0-9.]*" | sed -e 's,temps:bed:current:,,' -e 's-,active:- -' -e 's,[0-9.]* \([0-9.]*\),\1,')
 		head_temp=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" | sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,\([0-9.]*\) [0-9.]*,\1,')
 		head_target=$(echo $status | egrep -o "heads:current:[0-9.]*,active:[0-9.]*" |  sed -e 's,heads:current:,,' -e 's-,active:- -' -e 's,[0-9.]* \([0-9.]*\),\1,')
-		layer=$(echo $status | egrep -o 'currentLayer:[0-9]*' | sed 's,currentLayer:\([0-9]*\),\1,')
-		percent=$(echo $status | egrep -o 'fractionPrinted:[0-9.]*' | sed 's,fractionPrinted:\([0-9.]*\),\1,')
-		echo "Printing - Bed: $bed_temp Target: $bed_target Nozzle: $head_temp Target: $head_temp Layer: $layer Percent: $percent"
-		echo "CSV-$layer,$bed_temp,$bed_target,$head_temp,$head_target,$percent"
+		percent=$(get_val fractionPrinted)
+		layer=$(get_val currentLayer)
+		coords=$(get_val xyz)
+		ctool=$(get_val currentTool)
+		extruded=$(get_val extr)
+		fanp=$(get_val fanPercent)
+		speed=$(get_val speedFactor)
+		extf=$(get_val extrFactors)
+		seq=$(get_val seq)
+		fanrpm=$(get_val fanRPM)
+		ptime=$(get_val ",time")
+		extrRaw=$(get_val extrRaw)
+		first_duration=$(get_val firstLayerDuration)
+		first_height=$(get_val firstLayerHeight)
+		print_duration=$(get_val printDuration)
+		warm=$(get_val warmUpDuration)
+		file_left=$(get_val file)
+		filament_left=$(get_val filament)
+		layer_left=$(get_val ",layer")
+		layer_time=$(get_val currentLayerTime)
+		if [ "echo $status | egrep '^status:P')" ]
+		then
+			echo "Printing - Bed: $bed_temp Target: $bed_target Nozzle: $head_temp Target: $head_temp Layer: $layer Percent: $percent"
+		elif  [ "$(echo $status | egrep '^status:S')" ]
+		then
+			echo "Paused - Bed: $bed_temp Target: $bed_target Nozzle: $head_temp Target: $head_temp Layer: $layer Percent: $percent"
+		fi
+		echo "CSV-$layer,$bed_temp,$bed_target,$head_temp,$head_target,$percent,$layer_time,$coords,$ctool,$extruded,$fanp,$speed,$extf,$seq,$fanrpm,$ptime,\
+$extrRaw,$first_duration,$first_height,$warm,$file_left,$filament_left,$layer_left"
 		echo "RAW-$status"
 	elif [ "$(echo $status | egrep '^status:I')" ]
 	then
@@ -29,5 +54,44 @@ statusparser () {
 		echo "Idle" Bed: $bed_temp
 	else [ ! "$status" ]
 		echo "EMPTY"
+	fi
+}
+
+get_val() {
+	id=$1
+	echo $status | egrep -o "$id:[0-9,.]*" | sed -e "s/$id://" -e 's/,$//' -e 's/,/\\,/g'
+}
+
+
+finish_print () {
+
+	print="${1:-EMPTY}"
+	source ~/.duet
+
+	if [ "$print" = EMPTY ]
+	then
+		echo "$0 called without a valid print. Please call with a valid print."
+		exit 2
+	fi
+	
+	if [ ! -d "$viddir" ]
+	then
+		mkdir -p "$viddir"
+	fi
+
+	if [ -d $imgdir ]
+	then
+		echo "Creating timelapse for $print"
+		avconv=$(avconv -y -r 10 -i $imgdir/$print-%d.jpg -r 10 -g 15 -vcodec libx264 -q:v 3 ~/$viddir/$print.mp4 2>&1)
+		echo "Timelapse complete and written to ~/$viddir/$print.mp4"
+		if [ "$debug" = 1 ]
+		then
+			echo "Deleting source images."
+		fi
+		rm $imgdir/$print*
+		if [ "$debug" = 1 ]
+		then
+			echo "Source images deleted"
+		fi
 	fi
 }

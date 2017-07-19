@@ -18,6 +18,9 @@ case "$command" in
 		var=$(curl -s "http://$ip/rr_gcode?gcode=M24")
 		;;
 	cancel)
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M104%20S0")
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M140%20S0")
+		var=$(curl -s "http://$ip/rr_gcode?gcode=M109%20S0")
 		var=$(curl -s "http://$ip/rr_gcode?gcode=M1")
 		;;
 	ledon)
