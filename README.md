@@ -22,3 +22,6 @@ Photos for timelapses are stored in ~/pics/ by default and are named [date-print
 Bugs:
 
 * May interfere with Duet Web GUI while polling
+
+Required software:
+``avconv``
