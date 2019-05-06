@@ -78,8 +78,8 @@ then
 	then
 		#pause print
 		printcontrol pause
-		sleep 1
-		wget --quiet http://localhost/webcam/?action=snapshot -O $imgdir/$startdate-$duetm_loop.jpg
+		sleep 10
+		wget --quiet "http://localhost/webcam/?action=snapshot" -O $imgdir/$startdate-$duetm_loop.jpg
 		printcontrol resume
 		#resume print
 		duetm_oldlayer=$layer
