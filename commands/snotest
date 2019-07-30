@@ -1,0 +1,28 @@
+#!/bin/bash
+
+duetdir=$(dirname "$(readlink -f "$0")")
+source $duetdir/functions
+
+confcheck
+
+###
+#
+# Let's do an autocalibration or two...or three.
+#
+###
+
+g_wait M558 P4 H10 I1 R1
+g_wait G28
+
+g_send G30 P0 X0 Y125 Z-99999
+g_send G30 P1 X108.24 Y62.5 Z-99999
+g_send G30 P2 X108.24 Y-62.5 Z-99999
+g_send G30 P3 X0 Y-125 Z-99999
+g_send G30 P4 X-108.24 Y-62.5 Z-99999
+g_send G30 P5 X-108.24 Y62.5 Z-99999
+g_send G30 P6 X0 Y62.5 Z-99999
+g_send G30 P7 X54.13 Y-31.25 Z-99999
+g_send G30 P8 X-54.13 Y-31.25 Z-99999
+g_result $(g_send G30 P9 X0 Y0 Z-99999 S-1)
+
+g_send G0 Z250

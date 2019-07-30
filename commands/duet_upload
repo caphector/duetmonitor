@@ -1,0 +1,26 @@
+#!/bin/bash
+
+###
+#
+# Load Global Variables
+#
+###
+
+config=~/.duet
+. $config
+
+###
+#
+# Set local stuff
+#
+###
+
+path="$@"
+url=http://$ip/rr_upload?dir=
+
+#
+#
+# Do stuff
+#
+#
+

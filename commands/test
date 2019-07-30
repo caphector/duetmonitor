@@ -1,0 +1,12 @@
+#!/bin/bash
+
+duetdir=$(dirname "$(readlink -f "$0")")
+source $duetdir/functions
+
+confcheck
+
+seq=$(g_send G30 P0 X0 Y125 Z-9999 S-1)
+
+echo $seq
+
+g_result $seq

@@ -9,6 +9,10 @@ confcheck () {
 	fi
 }
 
+get_seq () {
+	curl -s http://192.168.1.72/rr_status?type=1 | egrep -o '"seq":[0-9]*' | sed 's/"seq"://'
+}
+
 statusparser () {
 	status=$(curl -s "http://$ip/rr_status?type=3" | tr -d \"\{\}\[\])
 
@@ -63,7 +67,6 @@ get_val() {
 
 
 finish_print () {
-
 	print="${1:-EMPTY}"
 	source ~/.duet
 
@@ -93,4 +96,79 @@ finish_print () {
 			echo "Source images deleted"
 		fi
 	fi
+}
+
+g_encode () {
+	args=$@
+	gcode=${args// /%20}
+	echo $gcode
+}
+
+g_auth () {
+	cur_auth=${1:-10}
+	cur_time=$(date +%s)
+	expired=$(expr $cur_time - $cur_auth)
+	if [ $expired -ge 7 ]
+	then
+		auth_fail=$(curl -s http://$ip/rr_connect?password=RepRap | grep -v '{"err":0,"' )
+		if [ $auth_fail ]
+		then
+
+			return 1
+			echo $auth_fail
+			exit
+		else 
+			echo $(date +%s)
+		fi
+	else
+		echo $cur_time
+	fi
+}
+
+g_send () {
+	var=$@
+	var=${var%%;.*}
+	before=$(get_seq)
+	gcode=$(g_encode $var)
+	auth=$(g_auth $auth)
+	buff=$(curl -s http://$ip/rr_gcode?gcode=$gcode)
+	after=$(get_seq)
+	if [ "$before" = "$after" ]
+	then
+		echo $after
+	else
+		curl -s http://$ip/rr_reply
+	fi	
+}	
+
+get_status () {
+	curl -s http://192.168.1.72/rr_status?type=1  | egrep -o '"status":"[BIP]*' | cut -d \" -f 4
+}
+
+g_wait () {
+        vars=$@
+        auth=$(g_auth $auth)
+        current=$(g_send $vars)
+	status=$(get_status)
+        while [ "$status" != I ]
+        do
+		auth=$(g_auth $auth)
+                sleep 1
+                status=$(get_status)
+        done
+	reply=$(curl -s http://$ip/rr_reply)
+	echo $reply
+}
+
+g_result () {
+	status=$1
+	current=$(g_send $vars)
+	auth=$(g_auth $auth)
+	while [ "$current" = "$status" ]
+	do
+		auth=$(g_auth $auth)
+		current=$(get_seq)
+	done
+	reply=$(curl -s http://$ip/rr_reply)
+	echo $reply
 }

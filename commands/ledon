@@ -1,6 +1,7 @@
 #!/bin/bash
 
-config=~/.duet
-. ~/.duet
+. ./functions
+
+confcheck
 
 var=$(curl -s "http://$ip/rr_gcode?gcode=M106%20P2%20S255")
