@@ -1,0 +1,50 @@
+1:48:10 PM
+G32 bed probe heights: 0.100 0.130 -0.139 -0.375 -0.009 -0.144 -0.174 -0.103 -0.095 -0.148, mean -0.096, deviation from mean 0.137
+1:34:05 PM
+G32 bed probe heights: 0.018 0.014 -0.181 -0.399 -0.008 -0.146 -0.189 -0.102 -0.114 -0.162, mean -0.127, deviation from mean 0.118
+1:03:23 PM
+Calibrated 6 factors using 13 points, deviation before 0.046 after 0.042
+1:01:00 PM
+G32 bed probe heights: -0.008 -0.073 0.075 -0.203 0.038 -0.025 -0.010 0.027 0.033 0.005 -0.007 -0.046 -0.033, mean -0.017, deviation from mean 0.065
+12:59:05 PM
+G32 bed probe heights: -0.002 -0.074 0.121 -0.180 0.054 -0.023 -0.006 0.038 0.036 0.022 -0.008 -0.042 -0.029, mean -0.007, deviation from mean 0.069
+12:57:12 PM
+G32 bed probe heights: 0.041 -0.051 -0.062 -0.385 -0.048 -0.115 -0.170 -0.035 -0.090 -0.129, mean -0.104, deviation from mean 0.109
+12:53:27 PM
+Calibrated 6 factors using 13 points, deviation before 0.039 after 0.037
+12:53:27 PM
+Calibrated 6 factors using 13 points, deviation before 0.039 after 0.037
+12:51:07 PM
+G32 bed probe heights: 0.028 -0.054 0.087 -0.082 0.055 -0.043 0.006 0.031 0.019 0.004 -0.006 -0.035 -0.010, mean -0.000, deviation from mean 0.044
+12:49:15 PM
+G32 bed probe heights: 0.082 0.007 0.067 -0.047 0.057 -0.038 0.012 0.035 0.025 0.023 -0.003 -0.041 -0.005, mean 0.013, deviation from mean 0.039
+12:47:24 PM
+G32 bed probe heights: 0.034 -0.066 -0.114 -0.334 0.003 -0.115 -0.172 -0.079 -0.058 -0.123, mean -0.102, deviation from mean 0.096
+12:42:52 PM
+Calibrated 6 factors using 13 points, deviation before 0.070 after 0.039
+12:42:51 PM
+Calibrated 6 factors using 13 points, deviation before 0.070 after 0.039
+12:40:35 PM
+G32 bed probe heights: 0.101 -0.067 0.074 0.171 0.101 -0.031 0.015 0.002 0.012 0.080 0.012 -0.030 -0.028, mean 0.032, deviation from mean 0.066
+12:38:44 PM
+G32 bed probe heights: 0.081 -0.060 0.083 0.169 0.112 -0.027 0.016 0.008 0.020 0.090 0.015 -0.031 -0.024, mean 0.035, deviation from mean 0.064
+12:36:54 PM
+G32 bed probe heights: 0.119 0.226 -0.080 -0.340 0.142 -0.079 -0.130 -0.085 -0.045 -0.130, mean -0.040, deviation from mean 0.155
+12:33:38 PM
+G32 bed probe heights: 0.117 -0.060 0.068 0.070 0.113 -0.028 0.016 0.023 0.030 0.085 0.026 -0.026 -0.018, mean 0.032, deviation from mean 0.054
+12:31:48 PM
+G32 bed probe heights: 0.128 -0.047 0.071 0.132 0.112 -0.018 0.013 0.037 0.035 0.081 0.022 -0.024 -0.013, mean 0.041, deviation from mean 0.058
+12:29:58 PM
+G32 bed probe heights: 0.119 0.156 -0.079 -0.346 0.091 -0.080 -0.127 -0.087 -0.039 -0.122, mean -0.051, deviation from mean 0.139
+12:26:59 PM
+G32 bed probe heights: 0.114 0.121 -0.119 -0.339 0.090 -0.076 -0.137 -0.054 -0.045 -0.127, mean -0.057, deviation from mean 0.133
+12:20:51 PM
+G32 bed probe heights: 0.119 0.101 -0.152 -0.344 0.105 -0.080 -0.126 -0.069 -0.051 -0.124, mean -0.062, deviation from mean 0.135
+12:16:16 PM
+G32 bed probe heights: 0.474 0.146 -0.073 -0.346 0.097 -0.086 -0.124 -0.063 -0.049 -0.121, mean -0.014, deviation from mean 0.205
+12:13:06 PM
+G32 bed probe heights: 0.479 0.566 0.252 0.039 0.482 0.316 0.246 0.332 0.337 0.250, mean 0.330, deviation from mean 0.143
+12:02:19 PM
+G32 bed probe heights: 0.465 0.595 0.292 0.051 0.445 0.310 0.239 0.321 0.315 0.254, mean 0.329, deviation from mean 0.140
+11:19:44 AM
+G32 bed probe heights: 0.439 0.391 0.187 -0.005 0.442 0.284 0.221 0.272 0.315 0.200, mean 0.275, deviation from mean 0.128
