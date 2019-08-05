@@ -4,7 +4,7 @@ import json
 import sys
 import requests
 import datetime
-import urllib.parse
+import urllib
 import time
 import subprocess
 import os
@@ -99,48 +99,35 @@ def gcoder(word):
 
 def shadow_macro(macro):
     macros = {
-        lprobe = """G30 P0 X0 Y125 Z-99999
-G30 P1 X108.24 Y62.5 Z-99999
-G30 P2 X108.24 Y-62.5 Z-99999
-G30 P3 X0 Y-125 Z-99999
-G30 P4 X-108.24 Y-62.5 Z-99999
-G30 P5 X-108.24 Y62.5 Z-99999
-G30 P6 X0 Y62.5 Z-99999
-G30 P7 X54.13 Y-31.25 Z-99999
-G30 P8 X-54.13 Y-31.25 Z-99999
-G30 P9 X0 Y0 Z-99999 S-1"""
-        sprobe = '''G30 P0 X-87.60 Y-53.00 Z-99999	; X tower
-G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers
-G30 P2 X85.60 Y-49.00 Z-99999	; Y tower
-G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers
-G30 P4 X1.00 Y101.00 Z-99999	; Z tower
-G30 P5 X-88.60 Y53.00 Z-99999	; between Z-X towers
-G30 P6 X-43.30 Y-25.00 Z-99999	; X tower
-G30 P7 X0.00 Y-50.00 Z-99999	; between X-Y towers
-G30 P8 X43.30 Y-25.00 Z-99999	; Y tower
-G30 P9 X43.30 Y25.00 Z-99999	; between Y-Z towers
-G30 P10 X0.00 Y50.00 Z-99999	; Z tower
-G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers
-G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors
-G1 X-87.60 Y-53.00 Z4 '''}
+        "lprobe":'G30 P0 X0 Y125 Z-99999@G30 P1 X108.24 Y62.5 Z-99999@G30 P2 X108.24 Y-62.5 Z-99999@G30 P3 X0 Y-125 Z-99999@G30 P4 X-108.24 Y-62.5 Z-99999@G30 P5 X-108.24 Y62.5 Z-99999@G30 P6 X0 Y62.5 Z-99999@G30 P7 X54.13 Y-31.25 Z-99999@G30 P8 X-54.13 Y-31.25 Z-99999@G30 P9 X0 Y0 Z-99999 S-1',
+        "sprobe":'G30 P0 X-87.60 Y-53.00 Z-99999	; X tower@G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers@G30 P2 X85.60 Y-49.00 Z-99999	; Y tower@G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers@G30 P4 X1.00 Y101.00 Z-99999	; Z tower@G30 P5 X-88.60 Y53.00 Z-99999	; between Z-X towers@G30 P6 X-43.30 Y-25.00 Z-99999	; X tower@G30 P7 X0.00 Y-50.00 Z-99999	; between X-Y towers@G30 P8 X43.30 Y-25.00 Z-99999	; Y tower@G30 P9 X43.30 Y25.00 Z-99999	; between Y-Z towers@G30 P10 X0.00 Y50.00 Z-99999	; Z tower@G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers@G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors@G1 X-87.60 Y-53.00 Z4 '}
     return macros[macro]
 
 def gcode_encode(line):
     code = urllib.parse.quote(line)
     return code
 
-def probe_parse(results,macro):
+def probe_parse(results):
     value = results
-    macro_lines = macro.splitlines()
+    spaces = value.count(' ')
+    if spaces == 22:
+        macro = shadow_macro('sprobe')
+    elif spaces == 19:
+        macro = shadow_macro('lprobe')
+    macro_lines = macro.split('@')
     split = value.split()
     spaces = value.count(' ')
     if spaces > 9:
-            split = val.split()
+            split = value.split()
             start=4
             mean = spaces - 4
             heights = spaces - 6
             Z=split[start:heights]
             probe_mean = split[mean]
             probe_dev = split[spaces]
-    for item in heights:
-        print("Item: {} - something".format(item))
+    i=0
+    for item in Z:
+        line = macro_lines[i]
+        split = line.split()
+        output = "{}, {}, {}"
+        print(output.format(split[2],split[2],item))
