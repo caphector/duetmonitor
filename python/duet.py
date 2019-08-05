@@ -28,7 +28,6 @@ def l_d(var):
     var_type = type(var)
     val = 'N: {}\nV: {}\nT: {}\n'
     print_value = val.format(var_name, p, var_value, p, var_type, p)
-#    print(print_value)
     return_value = val.format(var_name, l, var_value, l, var_type)
     return print_value, return_value
 
@@ -74,7 +73,7 @@ def take_photo(duet):
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
     wait_until_ready(send_gcode(gcoder('pause')))
-    log_line = 'Taking photo of ' + str(get_duet('currentLayer'))
+    log_line = 'Sent pause and taking photo of ' + str(get_duet('currentLayer'))
     log_and_print(log_line, function)
     os.chdir(dir)
     photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download --filename=' + str(get_duet('currentLayer')) + '.jpg'
@@ -103,13 +102,51 @@ def gcoder(word):
 
 def shadow_macro(macro):
     macros = {
-        "lprobe":'G30 P0 X0 Y125 Z-99999@G30 P1 X108.24 Y62.5 Z-99999@G30 P2 X108.24 Y-62.5 Z-99999@G30 P3 X0 Y-125 Z-99999@G30 P4 X-108.24 Y-62.5 Z-99999@G30 P5 X-108.24 Y62.5 Z-99999@G30 P6 X0 Y62.5 Z-99999@G30 P7 X54.13 Y-31.25 Z-99999@G30 P8 X-54.13 Y-31.25 Z-99999@G30 P9 X0 Y0 Z-99999 S-1',
-        "sprobe":'G30 P0 X-87.60 Y-53.00 Z-99999	; X tower@G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers@G30 P2 X85.60 Y-49.00 Z-99999	; Y tower@G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers@G30 P4 X1.00 Y101.00 Z-99999	; Z tower@G30 P5 X-88.60 Y53.00 Z-99999	; between Z-X towers@G30 P6 X-43.30 Y-25.00 Z-99999	; X tower@G30 P7 X0.00 Y-50.00 Z-99999	; between X-Y towers@G30 P8 X43.30 Y-25.00 Z-99999	; Y tower@G30 P9 X43.30 Y25.00 Z-99999	; between Y-Z towers@G30 P10 X0.00 Y50.00 Z-99999	; Z tower@G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers@G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors@G1 X-87.60 Y-53.00 Z4 '}
+        "lprobe":"""G30 P0 X0 Y125 Z-99999
+G30 P1 X108.24 Y62.5 Z-99999
+G30 P2 X108.24 Y-62.5 Z-99999
+G30 P3 X0 Y-125 Z-99999
+G30 P4 X-108.24 Y-62.5 Z-99999
+G30 P5 X-108.24 Y62.5 Z-99999
+G30 P6 X0 Y62.5 Z-99999
+G30 P7 X54.13 Y-31.25 Z-99999
+G30 P8 X-54.13 Y-31.25 Z-99999
+G30 P9 X0 Y0 Z-99999 S-1""",
+        "sprobe":'''G30 P0 X-87.60 Y-53.00 Z-99999	; X tower
+G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers
+G30 P2 X85.60 Y-49.00 Z-99999	; Y tower
+G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers
+G30 P4 X1.00 Y101.00 Z-99999	; Z tower
+G30 P5 X-88.60 Y53.00 Z-99999	; between Z-X towers
+G30 P6 X-43.30 Y-25.00 Z-99999	; X tower
+G30 P7 X0.00 Y-50.00 Z-99999	; between X-Y towers
+G30 P8 X43.30 Y-25.00 Z-99999	; Y tower
+G30 P9 X43.30 Y25.00 Z-99999	; between Y-Z towers
+G30 P10 X0.00 Y50.00 Z-99999	; Z tower
+G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers
+G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors
+G1 X-87.60 Y-53.00 Z4 '''
+        }
     return macros[macro]
 
 def gcode_encode(line):
     code = urllib.parse.quote(line)
     return code
+
+ def warmup(material):
+     temps = material(material)
+     bed = 55
+     extruder = 195
+     bed = "M190 {}".format(str(bed))
+     extruder = "M109 {}".format(str(extruder))
+     send_gcode(bed)
+     send_gcode(extruder)
+
+# def material():
+#     materials = {
+#       'pla': {'extruder': 195. 'bed': 55}
+#         'petg': {'extruder': 225. 'bed': 90} }
+#     return material[materials]
 
 def probe_parse(results):
     value = results

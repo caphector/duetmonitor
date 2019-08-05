@@ -18,11 +18,6 @@ output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
-def log_and_print(data, reason):
-    print(data, reason)
-    duet_logger(data, reason)
-
-
 def main():
     layer = get_duet('currentLayer')
     seq = get_duet('seq')
