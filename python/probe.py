@@ -5,7 +5,6 @@ from duet import *
 import os
 import json
 import sys
-import requests
 import datetime
 import urllib.parse
 import time
@@ -25,16 +24,18 @@ regularprobe = 'M98 P/macros/py/probe.g'
 
 autocalibration = 'G32'
 
-
-
 def scan_result(gcode):
     result = wait_until_ready(send_gcode(gcode))
     return result
 
-
 def main():
-#    warmup('pla')
+    send_gcode('home')
+    warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
-    for scan in ("largeprobe", "largeprobe", "regularprobe","regularprobe","autocalibration")
-    result =  scan_result(scan)
-    log_and_print(result, 'scan')
+    for scan in (largeprobe, largeprobe, regularprobe, regularprobe, autocalibration):
+        result = scan_result(scan)
+        log_and_print(result, 'scan')
+        probe_parse(result)
+
+main()
+

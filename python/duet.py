@@ -1,3 +1,4 @@
+
 #!/usr/bin/python3
 
 import json
@@ -8,7 +9,6 @@ import urllib
 import time
 import subprocess
 import os
-
 
 ip = '192.168.1.72'
 baseurl = 'http://' + ip + '/'
@@ -64,7 +64,6 @@ def wait_until_ready(sequence):
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
-#        print(data)
         log_and_print(data, function)
         if data:
             return data
@@ -133,14 +132,14 @@ def gcode_encode(line):
     code = urllib.parse.quote(line)
     return code
 
- def warmup(material):
-     temps = material(material)
-     bed = 55
-     extruder = 195
-     bed = "M190 {}".format(str(bed))
-     extruder = "M109 {}".format(str(extruder))
-     send_gcode(bed)
-     send_gcode(extruder)
+def warmup(material):
+    bed = 55
+    extruder = 195
+    bed = "M190 {}".format(str(bed))
+    extruder = "M109 {}".format(str(extruder))
+    print('Bed "{}", Extruder "{}"'.format(bed,extruder))
+    send_gcode(bed)
+    send_gcode(extruder)
 
 # def material():
 #     materials = {
@@ -149,17 +148,17 @@ def gcode_encode(line):
 #     return material[materials]
 
 def probe_parse(results):
-    value = results
-    spaces = value.count(' ')
+    function = probe_parse
+    spaces = results.count(' ')
     if spaces == 22:
         macro = shadow_macro('sprobe')
     elif spaces == 19:
         macro = shadow_macro('lprobe')
-    macro_lines = macro.split('@')
-    split = value.split()
-    spaces = value.count(' ')
+    macro_lines = macro.split('\n')
+    split = results.split()
+    spaces = results.count(' ')
     if spaces > 9:
-            split = value.split()
+            split = results.split()
             start=4
             mean = spaces - 4
             heights = spaces - 6
@@ -170,5 +169,9 @@ def probe_parse(results):
     for item in Z:
         line = macro_lines[i]
         split = line.split()
-        output = "{}, {}, {}"
-        print(output.format(split[2],split[2],item))
+        output = "{}, {}, {}".format(split[2],split[3],item)
+        log_and_print(output, function)
+        print(output)
+    data = "Z: {}, Mean: {}, Deviation: {}".format(Z, probe_mean, probe_dev)
+    log_and_print(data, function)
+    return Z, probe_mean, probe_dev
