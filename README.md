@@ -1,3 +1,5 @@
+Note: I'm currently reworking this in Python; experimental code can be found in python/, but it's experiemental and still being worked on.
+
 # duetmonitor
 Monitor and log print data with a Rasberry Pi; this logs basic print information to CSV. The script will detect prints starting,  start polling more frequently and take photos for a timelapse.
 
