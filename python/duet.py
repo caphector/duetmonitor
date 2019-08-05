@@ -16,9 +16,13 @@ output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
+def log_and_print(data, reason):
+    print(data, reason)
+    duet_logger(data, reason)
+
 def l_d(var):
     p = '\n'
-    l = ', ' 
+    l = ', '
     var_name = repr(eval(variable))
     var_value = var
     var_type = type(var)
@@ -26,15 +30,15 @@ def l_d(var):
     print_value = val.format(var_name, p, var_value, p, var_type, p)
 #    print(print_value)
     return_value = val.format(var_name, l, var_value, l, var_type)
-    return print_value,return_value
+    return print_value, return_value
 
 def get_state():
     try:
         status = requests.get(baseurl + 'rr_status?type=3')
     except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError) as e:
-        pr,rv = ld(e)
+        pr = ld(e)
         print(pr)
-        duet_log(rv,'ConErr')
+        log_and_print(rv,'ConErr')
         time.sleep(0.5)
         pass
     duet = status.json()
@@ -48,33 +52,33 @@ def duet_logger(log_data, tag):
      log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
 
 def wait_until_ready(sequence):
+    function = 'wait_until_ready'
     before = sequence
-    duet_logger(str(sequence), 'status')
-    busy = { 'B', 'S', 'P' }
+    log_and_print(str(sequence), function)
+    busy = {'B', 'S', 'P'}
     while get_duet('status') in busy:
-#        print('wait')
-        sequence = get_duet('seq')
- #       print(sequence + get_duet('status'))
+        log_and_print('Waiting for status change at sequence {}'.format(str(sequence)), function)
         time.sleep(0.5)
     sequence = get_duet('seq')
-#    print('Sequence is {} and before is {}'.format(sequence, before))
+    message = 'Sequence is {} and before is {}'.format(sequence, before)
+    log_and_print(message.format(message.format(str(sequence), str(before))), function)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
 #        print(data)
-        duet_logger(data, 'status')
+        log_and_print(data, function)
         if data:
             return data
 
 def take_photo(duet):
+    function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
     wait_until_ready(send_gcode(gcoder('pause')))
     log_line = 'Taking photo of ' + str(get_duet('currentLayer'))
-    duet_logger(log_line, 'photo')
-    wait_until_inactive()
+    log_and_print(log_line, function)
     os.chdir(dir)
     photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download --filename=' + str(get_duet('currentLayer')) + '.jpg'
-#    print(photo)
+    log_and_print(photo, function)
     subprocess.run(photo.split(), stdout=subprocess.DEVNULL)
     send_gcode(gcoder('resume'))
 
