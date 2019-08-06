@@ -68,7 +68,7 @@ def wait_until_ready(sequence):
         if data:
             return data
 
-def take_photo(duet):
+def take_photo(duet): # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
     wait_until_ready(send_gcode(gcoder('pause')))
