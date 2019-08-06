@@ -33,7 +33,7 @@ def main():
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
 #    for scan in (largeprobe, largeprobe, regularprobe, regularprobe, autocalibration):
-    for scan in (largeprobe):
+    for scan in (largeprobe, largeprobe):
         result = scan_result(scan)
         log_and_print(result, 'scan')
         probe_parse(result)
