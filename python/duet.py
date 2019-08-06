@@ -148,8 +148,10 @@ def warmup(material):
 #     return material[materials]
 
 def probe_parse(results):
-    function = probe_parse
+    function = 'probe_parse'
     spaces = results.count(' ')
+    log_and_print('Number of spaces is {} in "{}"'.format(str(spaces), results), function)
+    macro = None
     if spaces == 22:
         macro = shadow_macro('sprobe')
     elif spaces == 19:

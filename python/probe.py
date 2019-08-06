@@ -29,10 +29,11 @@ def scan_result(gcode):
     return result
 
 def main():
-    send_gcode('home')
+    send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
-    for scan in (largeprobe, largeprobe, regularprobe, regularprobe, autocalibration):
+#    for scan in (largeprobe, largeprobe, regularprobe, regularprobe, autocalibration):
+    for scan in (largeprobe):
         result = scan_result(scan)
         log_and_print(result, 'scan')
         probe_parse(result)
