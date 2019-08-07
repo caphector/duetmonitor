@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from duet import *
 
@@ -19,9 +19,7 @@ targetdir = '/timelapse'
 targetdir= os.environ['HOME'] + targetdir
 
 largeprobe = 'M98 P/macros/py/snoprobe.g'
-
 regularprobe = 'M98 P/macros/py/probe.g'
-
 autocalibration = 'G32'
 
 def scan_result(gcode):
@@ -29,14 +27,33 @@ def scan_result(gcode):
     return result
 
 def main():
+    probe_dev = 2
+    initial = 0.1
+    ready = 0.030
     send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
 #    for scan in (largeprobe, largeprobe, regularprobe, regularprobe, autocalibration):
-    for scan in (largeprobe, largeprobe):
-        result = scan_result(scan)
-        log_and_print(result, 'scan')
-        probe_parse(result)
+    i = 1
+    while probe_dev > initial:
+        log_and_print('Doing large radius calibration #{}'.format(i), 'initial_calibration')
+        result = scan_result(largeprobe)
+        print(result)
+        cal, probe_mean, probe_dev = probe_parse(result)
+        log_and_print('Completed large radius calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'initial_calibration')
+        time.sleep(30)
+    log_and_print('Results converged t {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, i))
+    while probe_dev > ready:
+        log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
+        result = scan_result(regularprobe)
+        cal, probe_mean, probe_dev = probe_parse(result)
+        log_and_print('Completed large radius calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
+        time.sleep(30)
+    log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
+    send_gcode(gcoder('autocalibration'))
+#    for scan in (largeprobe, largeprobe):
+#        result = scan_result(scan)
+#        log_and_print(result, 'scan')
+#        cal, probe_mean, probe_dev = probe_parse(result)
 
 main()
-

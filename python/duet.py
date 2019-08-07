@@ -1,5 +1,4 @@
-
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import json
 import sys
@@ -23,12 +22,11 @@ def log_and_print(data, reason):
 def l_d(var):
     p = '\n'
     l = ', '
-    var_name = repr(eval(variable))
     var_value = var
     var_type = type(var)
-    val = 'N: {}\nV: {}\nT: {}\n'
-    print_value = val.format(var_name, p, var_value, p, var_type, p)
-    return_value = val.format(var_name, l, var_value, l, var_type)
+    val = 'V: {}\nT: {}\n'
+    print_value = val.format(var_value, p, var_type, p)
+    return_value = val.format(var_value, l, var_type)
     return print_value, return_value
 
 def get_state():
@@ -53,14 +51,16 @@ def duet_logger(log_data, tag):
 def wait_until_ready(sequence):
     function = 'wait_until_ready'
     before = sequence
-    log_and_print(str(sequence), function)
+#    log_and_print(str(sequence), function)
     busy = {'B', 'S', 'P'}
+    i=1
     while get_duet('status') in busy:
-        log_and_print('Waiting for status change at sequence {}'.format(str(sequence)), function)
-        time.sleep(0.5)
+        if (i+1)%4==0:
+            log_and_print('Waiting for status change at sequence {}'.format(str(sequence)), function)
+        time.sleep(.5)
     sequence = get_duet('seq')
-    message = 'Sequence is {} and before is {}'.format(sequence, before)
-    log_and_print(message.format(message.format(str(sequence), str(before))), function)
+    message = 'Sequence is now {} and was {}'.format(sequence, before)
+    log_and_print(message, function)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
@@ -81,7 +81,7 @@ def take_photo(duet):
     send_gcode(gcoder('resume'))
 
 def send_gcode(code):
-    code = urllib.parse.quote(code)
+    code = gcode_encode(code)
     url = baseurl + 'rr_gcode?gcode=' + code
     sequence = get_duet('seq')
     good = requests.get(url)
@@ -138,8 +138,8 @@ def warmup(material):
     bed = "M190 {}".format(str(bed))
     extruder = "M109 {}".format(str(extruder))
     print('Bed "{}", Extruder "{}"'.format(bed,extruder))
-    send_gcode(bed)
-    send_gcode(extruder)
+#    send_gcode(bed)
+#    send_gcode(extruder)
 
 # def material():
 #     materials = {
@@ -148,32 +148,34 @@ def warmup(material):
 #     return material[materials]
 
 def probe_parse(results):
-    function = 'probe_parse'
     spaces = results.count(' ')
-    log_and_print('Number of spaces is {} in "{}"'.format(str(spaces), results), function)
-    macro = None
+    results = results.replace(',', '')
+    coord_order = 'Xcoord,Ycoord,Zcoord' # Coord format - match here - G30 P4 X-108.24 Y-62.5 Z-99999
     if spaces == 22:
         macro = shadow_macro('sprobe')
     elif spaces == 19:
         macro = shadow_macro('lprobe')
-    macro_lines = macro.split('\n')
+    else:
+        return None, None, None
     split = results.split()
-    spaces = results.count(' ')
-    if spaces > 9:
-            split = results.split()
-            start=4
-            mean = spaces - 4
-            heights = spaces - 6
-            Z=split[start:heights]
-            probe_mean = split[mean]
-            probe_dev = split[spaces]
-    i=0
-    for item in Z:
-        line = macro_lines[i]
+    Zcoords = split[4:-7]
+    Zcoords = list(map(float, Zcoords))
+    probe_mean = float(split[-5])
+    probe_dev = float(split[-1])
+    log_and_print(coord_order, 'parse-coords-xyz')
+    Xcoords, Ycoords = parse_macro(macro)
+    cal = zip(Xcoords,Ycoords,Zcoords)
+    for line in list(cal):
+            log_and_print(line, 'parse-coords-xyz')
+    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
+    return cal, probe_mean, probe_dev
+
+def parse_macro(macro):
+    macro_lines = macro.split('\n')
+    Xcoords, Ycoords = list(), list()
+    for line in macro_lines:         # G30 P4 X-108.24 Y-62.5 Z-99999
         split = line.split()
-        output = "{}, {}, {}".format(split[2],split[3],item)
-        log_and_print(output, function)
-        print(output)
-    data = "Z: {}, Mean: {}, Deviation: {}".format(Z, probe_mean, probe_dev)
-    log_and_print(data, function)
-    return Z, probe_mean, probe_dev
+        Xcoord, Ycoord = split[2][1:] ,split[3][1:]
+        Xcoords.append(float(Xcoord))
+        Ycoords.append(float(Ycoord))
+    return Xcoords, Ycoords
