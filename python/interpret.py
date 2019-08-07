@@ -12,12 +12,12 @@ import time
 import subprocess
 
 ip = '192.168.1.72'
-baseurl='http://' + ip + '/'
+baseurl = 'http://' + ip + '/'
 output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
-targetdir= os.environ['HOME'] + targetdir
+targetdiR = os.environ['HOME'] + targetdir
 
 largeprobe = 'M98 P/macros/py/snoprobe.g'
 
@@ -27,11 +27,13 @@ autocalibration = 'G32'
 
 file = '/Users/duncan/python/duetmonitor/python/gtest.txt'
 
+
 def get_output():
-	with open(file) as fp:
-		line = fp.readlines()
-		return line
+    with open(file) as fp:
+        line = fp.readlines()
+    return line
+
 
 for line in get_output():
-	print(line)
-	probe_parse(line)
+    print(line)
+    probe_parse(line)

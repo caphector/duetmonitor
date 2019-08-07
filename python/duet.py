@@ -15,9 +15,11 @@ output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
+
 def log_and_print(data, reason):
     print(data, reason)
     duet_logger(data, reason)
+
 
 def l_d(var):
     p = '\n'
@@ -29,34 +31,41 @@ def l_d(var):
     return_value = val.format(var_value, l, var_type)
     return print_value, return_value
 
+
 def get_state():
     try:
         status = requests.get(baseurl + 'rr_status?type=3')
-    except (ConnectTimeout, HTTPError, ReadTimeout, Timeout, ConnectionError) as e:
-        pr = ld(e)
+    except Exception as e:
+        pr = l_d(e)
         print(pr)
-        log_and_print(rv,'ConErr')
+        log_and_print(e, 'ConErr')
         time.sleep(0.5)
         pass
+    except KeyboardInterrupt:
+        exit(1)
     duet = status.json()
     return duet, status
+
 
 def get_duet(item):
     duet = get_state()[0]
     return duet[item]
 
+
 def duet_logger(log_data, tag):
      log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
+
 
 def wait_until_ready(sequence):
     function = 'wait_until_ready'
     before = sequence
 #    log_and_print(str(sequence), function)
     busy = {'B', 'S', 'P'}
-    i=1
+    i = 1
     while get_duet('status') in busy:
-        if (i+1)%4==0:
-            log_and_print('Waiting for status change at sequence {}'.format(str(sequence)), function)
+        if (i + 1) % 4 == 0:
+            scold = 'Waiting for status change at sequence {}'
+            log_and_print(scold.format(str(sequence)), function)
         time.sleep(.5)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
@@ -68,17 +77,20 @@ def wait_until_ready(sequence):
         if data:
             return data
 
-def take_photo(duet): # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
+
+def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
     wait_until_ready(send_gcode(gcoder('pause')))
-    log_line = 'Sent pause and taking photo of ' + str(get_duet('currentLayer'))
-    log_and_print(log_line, function)
+    log_line = 'Sent pause and taking photo of '
+    log_and_print(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
-    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download --filename=' + str(get_duet('currentLayer')) + '.jpg'
+    image = '--filename=' + str(get_duet('currentLayer')) + '.jpg'
+    photo = 'sudo gphoto2 --wait-event=350ms --capture-image-and-download'
     log_and_print(photo, function)
-    subprocess.run(photo.split(), stdout=subprocess.DEVNULL)
+    subprocess.run(photo + image.split(), stdout=subprocess.DEVNULL)
     send_gcode(gcoder('resume'))
+
 
 def send_gcode(code):
     code = gcode_encode(code)
@@ -87,9 +99,10 @@ def send_gcode(code):
     good = requests.get(url)
     return sequence
 
+
 def gcoder(word):
     gcodes = {
-        "pause":"M226",
+        "pause" : "M226",
         "resume":"M24",
         "more_probe":"M558 P4 H3 I1 R1 A4 B1",
         "less_probe":"M558 P4 H3 I1 R1 A1 B1",
@@ -128,18 +141,21 @@ G1 X-87.60 Y-53.00 Z4 '''
         }
     return macros[macro]
 
+
 def gcode_encode(line):
     code = urllib.parse.quote(line)
     return code
+
 
 def warmup(material):
     bed = 55
     extruder = 195
     bed = "M190 {}".format(str(bed))
     extruder = "M109 {}".format(str(extruder))
-    print('Bed "{}", Extruder "{}"'.format(bed,extruder))
+    print('Bed "{}", Extruder "{}"'.format(bed, extruder))
 #    send_gcode(bed)
 #    send_gcode(extruder)
+    return
 
 # def material():
 #     materials = {
@@ -150,8 +166,8 @@ def warmup(material):
 def probe_parse(results):
     spaces = results.count(' ')
     results = results.replace(',', '')
-    coord_order = 'Xcoord,Ycoord,Zcoord' # Coord format - match here - G30 P4 X-108.24 Y-62.5 Z-99999
-    if spaces == 22:
+    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
+    if spaces == 22:  # 30 P4 X-108.24 Y-62.5 Z-99999
         macro = shadow_macro('sprobe')
     elif spaces == 19:
         macro = shadow_macro('lprobe')
@@ -164,18 +180,19 @@ def probe_parse(results):
     probe_dev = float(split[-1])
     log_and_print(coord_order, 'parse-coords-xyz')
     Xcoords, Ycoords = parse_macro(macro)
-    cal = zip(Xcoords,Ycoords,Zcoords)
+    cal = zip(Xcoords, Ycoords, Zcoords)
     for line in list(cal):
-            log_and_print(line, 'parse-coords-xyz')
-    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
+        log_and_print(line, 'parse-coords-xyz')
+#    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
     return cal, probe_mean, probe_dev
+
 
 def parse_macro(macro):
     macro_lines = macro.split('\n')
     Xcoords, Ycoords = list(), list()
     for line in macro_lines:         # G30 P4 X-108.24 Y-62.5 Z-99999
         split = line.split()
-        Xcoord, Ycoord = split[2][1:] ,split[3][1:]
+        Xcoord, Ycoord = split[2][1:], split[3][1:]
         Xcoords.append(float(Xcoord))
         Ycoords.append(float(Ycoord))
     return Xcoords, Ycoords
