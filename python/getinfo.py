@@ -4,7 +4,7 @@ from duet import wait_until_ready, send_gcode
 import os
 
 
-ip = '192.168.1.72'
+ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 output = '/tmp/file'
 log = open(output, 'a')

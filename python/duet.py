@@ -14,8 +14,11 @@ import os
 # ToDo: Add probing macro generation
 # Add file interaction on Duet (read/write)
 # Calibrate then print
+# Slice while calibrating and then print
+# ??? Something computer vision ???
+#
 
-ip = '192.168.1.72'
+ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 output = '/tmp/file'
 log = open(output, 'a')
@@ -186,9 +189,9 @@ def probe_parse(results):
 #    log_and_print(coord_order, 'parse-coords-xyz')
     Xcoords, Ycoords = parse_macro(macro)
     cal = zip(Xcoords, Ycoords, Zcoords)
-#    for line in list(cal):
-#        log_and_print(line, 'parse-coords-xyz')
-#    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
+    #    for line in list(cal):
+    #        log_and_print(line, 'parse-coords-xyz')
+    #    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
     return cal, probe_mean, probe_dev
 
 

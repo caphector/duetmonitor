@@ -10,7 +10,7 @@ import urllib.parse
 import time
 import subprocess
 
-ip = '192.168.1.72'
+ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 output = '/tmp/file'
 log = open(output, 'a')
