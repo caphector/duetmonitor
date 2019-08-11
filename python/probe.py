@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from duet import log_and_print
+from duet import *
+
 
 import os
 import json
