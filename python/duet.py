@@ -9,7 +9,16 @@ import time
 import subprocess
 import os
 
-ip = '192.168.1.72'
+###
+#
+# ToDo: Add probing macro generation
+# Add file interaction on Duet (read/write)
+# Calibrate then print
+# Slice while calibrating and then print
+# ??? Something computer vision ???
+#
+
+ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 output = '/tmp/file'
 log = open(output, 'a')
@@ -53,7 +62,7 @@ def get_duet(item):
 
 
 def duet_logger(log_data, tag):
-     log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
+    log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
 
 
 def wait_until_ready(sequence):
@@ -61,11 +70,7 @@ def wait_until_ready(sequence):
     before = sequence
 #    log_and_print(str(sequence), function)
     busy = {'B', 'S', 'P'}
-    i = 1
     while get_duet('status') in busy:
-        if (i + 1) % 4 == 0:
-            scold = 'Waiting for status change at sequence {}'
-            log_and_print(scold.format(str(sequence)), function)
         time.sleep(.5)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
@@ -96,25 +101,26 @@ def send_gcode(code):
     code = gcode_encode(code)
     url = baseurl + 'rr_gcode?gcode=' + code
     sequence = get_duet('seq')
-    good = requests.get(url)
+    requests.get(url)
     return sequence
 
 
 def gcoder(word):
     gcodes = {
-        "pause" : "M226",
-        "resume":"M24",
-        "more_probe":"M558 P4 H3 I1 R1 A4 B1",
-        "less_probe":"M558 P4 H3 I1 R1 A1 B1",
-        "home":"G28",
-        "autocal":"G32",
-        "probe":"G30 P" # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
+        "pause": "M226",
+        "resume": "M24",
+        "more_probe": "M558 P4 H3 I1 R1 A4 B1",
+        "less_probe": "M558 P4 H3 I1 R1 A1 B1",
+        "home": "G28",
+        "autocal": "G32",
+        "probe": "G30 P" # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
     }
     return gcodes[word]
 
+
 def shadow_macro(macro):
     macros = {
-        "lprobe":"""G30 P0 X0 Y125 Z-99999
+        "lprobe": """G30 P0 X0 Y125 Z-99999
 G30 P1 X108.24 Y62.5 Z-99999
 G30 P2 X108.24 Y-62.5 Z-99999
 G30 P3 X0 Y-125 Z-99999
@@ -124,7 +130,7 @@ G30 P6 X0 Y62.5 Z-99999
 G30 P7 X54.13 Y-31.25 Z-99999
 G30 P8 X-54.13 Y-31.25 Z-99999
 G30 P9 X0 Y0 Z-99999 S-1""",
-        "sprobe":'''G30 P0 X-87.60 Y-53.00 Z-99999	; X tower
+        "sprobe": '''G30 P0 X-87.60 Y-53.00 Z-99999	; X tower
 G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers
 G30 P2 X85.60 Y-49.00 Z-99999	; Y tower
 G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers
@@ -138,7 +144,7 @@ G30 P10 X0.00 Y50.00 Z-99999	; Z tower
 G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers
 G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors
 G1 X-87.60 Y-53.00 Z4 '''
-        }
+    }
     return macros[macro]
 
 
@@ -157,16 +163,18 @@ def warmup(material):
 #    send_gcode(extruder)
     return
 
+
 # def material():
 #     materials = {
 #       'pla': {'extruder': 195. 'bed': 55}
 #         'petg': {'extruder': 225. 'bed': 90} }
 #     return material[materials]
 
+
 def probe_parse(results):
     spaces = results.count(' ')
     results = results.replace(',', '')
-    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
+#    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
     if spaces == 22:  # 30 P4 X-108.24 Y-62.5 Z-99999
         macro = shadow_macro('sprobe')
     elif spaces == 19:
@@ -178,12 +186,12 @@ def probe_parse(results):
     Zcoords = list(map(float, Zcoords))
     probe_mean = float(split[-5])
     probe_dev = float(split[-1])
-    log_and_print(coord_order, 'parse-coords-xyz')
+#    log_and_print(coord_order, 'parse-coords-xyz')
     Xcoords, Ycoords = parse_macro(macro)
     cal = zip(Xcoords, Ycoords, Zcoords)
-    for line in list(cal):
-        log_and_print(line, 'parse-coords-xyz')
-#    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
+    #    for line in list(cal):
+    #        log_and_print(line, 'parse-coords-xyz')
+    #    data = "Z: {}, Mean: {}, Deviation: {}".format(Zcoords, probe_mean, probe_dev)
     return cal, probe_mean, probe_dev
 
 
