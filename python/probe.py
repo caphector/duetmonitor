@@ -36,7 +36,7 @@ def scan_result(gcode):
 def main():
     probe_dev = 2
     initial = 0.040
-    ready = 0.020
+    ready = 0.040
     send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
@@ -51,7 +51,7 @@ def main():
         log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
         log_and_print(log.format(i, probe_mean, probe_dev), 'initial_calibration')
         time.sleep(30)
-    log_and_print('Results converged at {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, initial, i))
+    log_and_print('Results converged at {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, initial, i), 'maybe useless?')
     while probe_dev > ready:
         log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
         result = scan_result(regularprobe)
