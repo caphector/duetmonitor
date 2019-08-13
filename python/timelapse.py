@@ -15,7 +15,7 @@ from os.path import expanduser
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 home = expanduser("~")
-output = home + '/duetlog'
+output = home + 'duetlog'
 log = open(output, 'a')
 
 
@@ -32,9 +32,9 @@ def main():
         layer = get_duet('currentLayer')
         seq = get_duet('seq')
         if layer > inc_layer:
-            log_and_print('Starting take_photo at layer {}'.format(str(layer)), timelapse)
-            m122_info = wait_until_ready(send_gcode('M122'))
-            duet_logger(m122_info, 'M122')
+            log_and_print('Getting M122 info at layer {}'.format(str(layer)), timelapse)
+            #  m122_info = wait_until_ready(send_gcode('M122'))
+            #  duet_logger(m122_info, 'M122')
             take_photo(duet)
             inc_layer = get_duet('currentLayer')
             log_and_print('Took photo for layer{}'.format(str(layer)))

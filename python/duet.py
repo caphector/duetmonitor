@@ -23,7 +23,7 @@ ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 targetdir = '/timelapse'
 home = expanduser("~")
-output = home + '/duetlog'
+output = home + 'duetlog'
 log = open(output, 'a')
 
 
@@ -88,6 +88,7 @@ def wait_until_ready(sequence):
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
+    log_and_print('pausing', function)
     wait_until_ready(send_gcode(gcoder('pause')))
     log_line = 'Sent pause and taking photo of '
     log_and_print(log_line + str(get_duet('currentLayer')), function)
