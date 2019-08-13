@@ -12,6 +12,7 @@ import time
 import subprocess
 from os.path import expanduser
 import pysnooper
+from timeit import default_timer as timer
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
@@ -45,7 +46,10 @@ def main():
     log_and_print(log.format(i), 'initial_calibration')
 
     while probe_dev > initial:
+        start = timer()
         result = scan_result(regularprobe)
+        end = timer()
+        print(end - start)
         print(result)
         cal, probe_mean, probe_dev = probe_parse(result)
         log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
@@ -54,7 +58,11 @@ def main():
     log_and_print('Results converged at {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, initial, i), 'maybe useless?')
     while probe_dev > ready:
         log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
+        start = timer()
         result = scan_result(regularprobe)
+        end = timer()
+        print(end - start)
+        print(result)
         cal, probe_mean, probe_dev = probe_parse(result)
         log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
