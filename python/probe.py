@@ -12,6 +12,7 @@ import time
 import subprocess
 from os.path import expanduser
 import pysnooper
+from timeit import default_timer as timer
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
@@ -36,7 +37,7 @@ def scan_result(gcode):
 def main():
     probe_dev = 2
     initial = 0.040
-    ready = 0.020
+    ready = 0.040
     send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
@@ -45,7 +46,10 @@ def main():
     log_and_print(log.format(i), 'initial_calibration')
 
     while probe_dev > initial:
+        start = timer()
         result = scan_result(regularprobe)
+        end = timer()
+        print(end - start)
         print(result)
         cal, probe_mean, probe_dev = probe_parse(result)
         log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
@@ -54,7 +58,11 @@ def main():
     log_and_print('Results converged at {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, initial, i))
     while probe_dev > ready:
         log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
+        start = timer()
         result = scan_result(regularprobe)
+        end = timer()
+        print(end - start)
+        print(result)
         cal, probe_mean, probe_dev = probe_parse(result)
         log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
