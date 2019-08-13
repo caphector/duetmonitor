@@ -10,10 +10,13 @@ import datetime
 import urllib.parse
 import time
 import subprocess
+from os.path import expanduser
+import pysnooper
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
-output = '~/duetlog'
+home = expanduser("~")
+output = home + '/duetlog'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
@@ -31,8 +34,8 @@ def scan_result(gcode):
 
 def main():
     probe_dev = 2
-    initial = 0.1
-    ready = 0.030
+    initial = 0.040
+    ready = 0.020
     send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
@@ -41,7 +44,7 @@ def main():
     log_and_print(log.format(i), 'initial_calibration')
 
     while probe_dev > initial:
-        result = scan_result(largeprobe)
+        result = scan_result(regularprobe)
         print(result)
         cal, probe_mean, probe_dev = probe_parse(result)
         log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
