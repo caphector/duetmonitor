@@ -14,7 +14,6 @@ import os
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
-output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
@@ -23,8 +22,6 @@ def main():
     layer = get_duet('currentLayer')
     seq = get_duet('seq')
     log_and_print('Starting photo for layer {} at sequence {}'.format(str(layer), str(seq)), timelapse)
-    m122_info = wait_until_ready(send_gcode('M122'))
-    duet_logger(m122_info, 'M122')
     inc_layer = layer
     known = seq
     duet, status = get_state()
@@ -34,6 +31,8 @@ def main():
         seq = get_duet('seq')
         if layer > inc_layer:
             log_and_print('Starting take_photo at layer {}'.format(str(layer)), timelapse)
+            m122_info = wait_until_ready(send_gcode('M122'))
+            duet_logger(m122_info, 'M122')
             take_photo(duet)
             inc_layer = get_duet('currentLayer')
             log_and_print('Took photo for layer{}'.format(str(layer)))

@@ -8,6 +8,7 @@ import urllib
 import time
 import subprocess
 import os
+from os.path import expanduser
 
 ###
 #
@@ -20,9 +21,10 @@ import os
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
-output = '/tmp/file'
 log = open(output, 'a')
 targetdir = '/timelapse'
+home = expanduser("~")
+output = home + 'duetlog'
 
 
 def log_and_print(data, reason):

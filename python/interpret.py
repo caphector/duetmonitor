@@ -13,7 +13,7 @@ import subprocess
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
-output = '/tmp/file'
+output = '~/duetlog'
 log = open(output, 'a')
 targetdir = '/timelapse'
 
