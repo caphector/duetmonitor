@@ -43,6 +43,8 @@ def main():
     log = 'Doing large radius calibration'
     log_and_print(log.format(i), 'initial_calibration')
 
+
+@pysnooper.snoop()
     while probe_dev > initial:
         result = scan_result(regularprobe)
         print(result)
