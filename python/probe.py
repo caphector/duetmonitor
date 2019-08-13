@@ -32,6 +32,7 @@ def scan_result(gcode):
     return result
 
 
+@pysnooper.snoop()
 def main():
     probe_dev = 2
     initial = 0.040
@@ -43,8 +44,6 @@ def main():
     log = 'Doing large radius calibration'
     log_and_print(log.format(i), 'initial_calibration')
 
-
-@pysnooper.snoop()
     while probe_dev > initial:
         result = scan_result(regularprobe)
         print(result)
