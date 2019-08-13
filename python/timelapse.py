@@ -11,6 +11,7 @@ import time
 import subprocess
 import os
 from os.path import expanduser
+import pysnooper
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
@@ -18,7 +19,7 @@ home = expanduser("~")
 output = home + '/duetlog'
 log = open(output, 'a')
 
-
+@pysnooper.snoop()
 def main():
     timelapse = 'timelapse'
     layer = get_duet('currentLayer')

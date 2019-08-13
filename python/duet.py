@@ -9,6 +9,7 @@ import time
 import subprocess
 import os
 from os.path import expanduser
+import pysnooper
 
 ###
 #
@@ -66,7 +67,7 @@ def get_duet(item):
 def duet_logger(log_data, tag):
     log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
 
-
+@pysnooper.snoop()
 def wait_until_ready(sequence):
     function = 'wait_until_ready'
     before = sequence
@@ -84,7 +85,7 @@ def wait_until_ready(sequence):
         if data:
             return data
 
-
+@pysnooper.snoop()
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
