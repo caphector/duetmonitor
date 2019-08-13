@@ -67,7 +67,7 @@ def main():
         log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
     log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
-    send_gcode(gcoder('autocalibration'))
+    send_gcode(gcoder('autocal'))
 #    for scan in (largeprobe, largeprobe):
 #        result = scan_result(scan)
 #        log_and_print(result, 'scan')
