@@ -15,7 +15,7 @@ from os.path import expanduser
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
 home = expanduser("~")
-output = home + 'duetlog'
+output = home + '/duetlog'
 log = open(output, 'a')
 
 

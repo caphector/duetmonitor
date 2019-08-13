@@ -21,10 +21,10 @@ from os.path import expanduser
 
 ip = '192.168.1.88'
 baseurl = 'http://' + ip + '/'
-log = open(output, 'a')
 targetdir = '/timelapse'
 home = expanduser("~")
-output = home + 'duetlog'
+output = home + '/duetlog'
+log = open(output, 'a')
 
 
 def log_and_print(data, reason):
