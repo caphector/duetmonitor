@@ -51,12 +51,12 @@ def main():
         log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
         log_and_print(log.format(i, probe_mean, probe_dev), 'initial_calibration')
         time.sleep(30)
-    log_and_print('Results converged t {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, i))
+    log_and_print('Results converged at {} (under {}) after {} runs. Fine tuning...'.format(probe_dev, initial, i))
     while probe_dev > ready:
         log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
         result = scan_result(regularprobe)
         cal, probe_mean, probe_dev = probe_parse(result)
-        log_and_print('Completed large radius calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
+        log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
     log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
     send_gcode(gcoder('autocalibration'))
