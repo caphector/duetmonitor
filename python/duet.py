@@ -43,38 +43,41 @@ def l_d(var):
     return_value = val.format(var_value, l, var_type)
     return print_value, return_value
 
-
 def get_state():
     try:
         status = requests.get(baseurl + 'rr_status?type=3')
     except Exception as e:
-        pr = l_d(e)
-        print(pr)
+#        pr = l_d(e)
+#       print(pr)
         log_and_print(e, 'ConErr')
         time.sleep(0.5)
         pass
     except KeyboardInterrupt:
         exit(1)
     duet = status.json()
+#    print('Duet is: {}\nStatus is: {}'.format(duet, status))
     return duet, status
 
 
 def get_duet(item):
     duet = get_state()[0]
+#    string = 'Field: {}\n Value: {}'.format(item, duet[item])
+#    log_and_print(string, 'get_duet result')
     return duet[item]
 
 
 def duet_logger(log_data, tag):
     log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
 
-@pysnooper.snoop()
+#@pysnooper.snoop()
 def wait_until_ready(sequence):
     function = 'wait_until_ready'
     before = sequence
 #    log_and_print(str(sequence), function)
-    busy = {'B', 'S', 'P'}
+    busy = {'B', 'P'}
     while get_duet('status') in busy:
         time.sleep(.5)
+    time.sleep(10)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
     log_and_print(message, function)
@@ -85,7 +88,7 @@ def wait_until_ready(sequence):
         if data:
             return data
 
-@pysnooper.snoop()
+#@pysnooper.snoop()
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
@@ -94,10 +97,11 @@ def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 2
     log_line = 'Sent pause and taking photo of '
     log_and_print(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
-    image = '--filename=' + str(get_duet('currentLayer')) + '.jpg'
-    photo = 'sudo gphoto2 --wait-event=350ms --capture-image-and-download'
+    image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
+    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
     log_and_print(photo, function)
-    subprocess.run(photo + image.split(), stdout=subprocess.DEVNULL)
+    command = (photo + image)
+    subprocess.run(command, stdout=subprocess.DEVNULL, shell=True)
     send_gcode(gcoder('resume'))
 
 

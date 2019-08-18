@@ -19,7 +19,7 @@ home = expanduser("~")
 output = home + '/duetlog'
 log = open(output, 'a')
 
-@pysnooper.snoop()
+#@pysnooper.snoop()
 def main():
     timelapse = 'timelapse'
     layer = get_duet('currentLayer')
@@ -33,12 +33,12 @@ def main():
         layer = get_duet('currentLayer')
         seq = get_duet('seq')
         if layer > inc_layer:
-            log_and_print('Getting M122 info at layer {}'.format(str(layer)), timelapse)
+#            log_and_print('Getting M122 info at layer {}'.format(str(layer)), timelapse)
             #  m122_info = wait_until_ready(send_gcode('M122'))
             #  duet_logger(m122_info, 'M122')
             take_photo(duet)
             inc_layer = get_duet('currentLayer')
-            log_and_print('Took photo for layer{}'.format(str(layer)))
+            log_and_print('Took photo for layer{}'.format(str(layer)), timelapse)
         if seq > known:
             reply = requests.get(baseurl + 'rr_reply')
             duet_logger(reply.text, 'reply')
