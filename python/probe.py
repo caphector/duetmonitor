@@ -33,29 +33,32 @@ def scan_result(gcode):
     return result
 
 
-@pysnooper.snoop()
+# @pysnooper.snoop()
 def main():
     probe_dev = 2
-    initial = 0.100
-    ready = 0.020
+    ready = 0.030
     send_gcode(gcoder('home'))
     warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
     i = 1
     log = 'Doing large radius calibration'
     log_and_print(log.format(i), 'initial_calibration')
-
-    while probe_dev > initial:
+    t1 = timer()
+    while probe_dev > ready:
+        log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
         start = timer()
         result = scan_result(regularprobe)
         end = timer()
-        log_and_print(end - start, 'timer')
-        print(result)
+        timed = (end - start)
+        log_and_print('Probing took {} seconds'.format(timed), 'timer')
         cal, probe_mean, probe_dev = probe_parse(result)
-        log = 'Completed large radius calibration #{}. Mean: {} Dev: {}'
-        log_and_print(log.format(i, probe_mean, probe_dev), 'initial_calibration')
+        log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
     log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
     send_gcode(gcoder('autocal'))
+    t2 = timer
+    time = (t2 - t1)
+    log_and_print('Calibration took {} seconds'.format(time), 'timer')
+
 
 main()
