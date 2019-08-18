@@ -20,6 +20,7 @@ import pysnooper
 # ??? Something computer vision ???
 # Convert to real logging
 # Create a printer object
+# Config file
 #
 
 ip = '192.168.1.88'
