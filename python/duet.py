@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import json
-import sys
+# import json
+# import sys
 import requests
 import datetime
 import urllib
@@ -9,7 +9,8 @@ import time
 import subprocess
 import os
 from os.path import expanduser
-import pysnooper
+import logging
+# import pysnooper
 
 ###
 #
@@ -30,29 +31,36 @@ home = expanduser("~")
 output = home + '/duetlog'
 log = open(output, 'a')
 
-
-def log_and_print(data, reason):
-    print(data, reason)
-    duet_logger(data, reason)
+logger = logging.getLogger('duet-log')
+logfile = logging.FileHandler(output)
+logfile.setLevel(logging.WARNING)
+stdout = logging.StreamHandler()
+stdout.setLevel(logging.ERROR)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logfile.setFormatter(formatter)
+stdout.setFormatter(formatter)
+logger.addHandler(logfile)
+logger.addHandler(stdout)
 
 
 def l_d(var):
-    p = '\n'
-    l = ', '
+    new = '\n'
+    co = ', '
     var_value = var
     var_type = type(var)
     val = 'V: {}\nT: {}\n'
-    print_value = val.format(var_value, p, var_type, p)
-    return_value = val.format(var_value, l, var_type)
+    print_value = val.format(var_value, new, var_type, new)
+    return_value = val.format(var_value, co, var_type)
     return print_value, return_value
+
 
 def get_state():
     try:
         status = requests.get(baseurl + 'rr_status?type=3')
     except Exception as e:
-#        pr = l_d(e)
-#       print(pr)
-        log_and_print(e, 'ConErr')
+        # pr = l_d(e)
+        # print(pr)
+        logger.error(e, 'ConErr')
         time.sleep(0.5)
         pass
     except KeyboardInterrupt:
@@ -64,45 +72,49 @@ def get_state():
 
 def get_duet(item):
     duet = get_state()[0]
-#    string = 'Field: {}\n Value: {}'.format(item, duet[item])
-#    log_and_print(string, 'get_duet result')
+    string = 'Field: {}\n Value: {}'.format(item, duet[item])
+    logger.debug(string, 'get_duet result')
     return duet[item]
 
 
 def duet_logger(log_data, tag):
     log.write(datetime.datetime.now().isoformat() + ': {}: {}\n'.format(tag, log_data))
 
-#@pysnooper.snoop()
+# @pysnooper.snoop()
+
+
 def wait_until_ready(sequence):
     function = 'wait_until_ready'
     before = sequence
-#    log_and_print(str(sequence), function)
+    logger.debug(str(sequence), function)
     busy = {'B', 'P'}
     while get_duet('status') in busy:
         time.sleep(.5)
     time.sleep(10)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
-    log_and_print(message, function)
+    logger.info(message, function)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
-        log_and_print(data, function)
+        logger.info(data, function)
         if data:
             return data
 
-#@pysnooper.snoop()
+# @pysnooper.snoop()
+
+
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
-    log_and_print('pausing', function)
+    logger.debug('pausing', function)
     wait_until_ready(send_gcode(gcoder('pause')))
     log_line = 'Sent pause and taking photo of '
-    log_and_print(log_line + str(get_duet('currentLayer')), function)
+    logger.debug(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
     image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
     photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
-    log_and_print(photo, function)
+    logger.debug(photo, function)
     command = (photo + image)
     subprocess.run(command, stdout=subprocess.DEVNULL, shell=True)
     send_gcode(gcoder('resume'))
@@ -124,7 +136,7 @@ def gcoder(word):
         "less_probe": "M558 P4 H3 I1 R1 A1 B1",
         "home": "G28",
         "autocal": "G32",
-        "probe": "G30 P" # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
+        "probe": "G30 P"  # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
     }
     return gcodes[word]
 
@@ -197,7 +209,7 @@ def probe_parse(results):
     Zcoords = list(map(float, Zcoords))
     probe_mean = float(split[-5])
     probe_dev = float(split[-1])
-#    log_and_print(coord_order, 'parse-coords-xyz')
+    logger.debug(coord_order, 'parse-coords-xyz')
     Xcoords, Ycoords = parse_macro(macro)
     cal = zip(Xcoords, Ycoords, Zcoords)
     #    for line in list(cal):

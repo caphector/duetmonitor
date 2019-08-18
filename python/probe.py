@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 
-from duet import *
+import duet as du
 
-
+import logging
 import os
-import json
-import sys
-import datetime
-import urllib.parse
 import time
-import subprocess
 from os.path import expanduser
-import pysnooper
+# import pysnooper
 from timeit import default_timer as timer
 
 ip = '192.168.1.88'
@@ -27,9 +22,12 @@ largeprobe = 'M98 P/macros/py/snoprobe.g'
 regularprobe = 'M98 P/macros/py/probe.g'
 autocalibration = 'G32'
 
+logger = logging.getLogger('duet-log')
+
+
 
 def scan_result(gcode):
-    result = wait_until_ready(send_gcode(gcode))
+    result = du.wait_until_ready(du.send_gcode(gcode))
     return result
 
 
@@ -37,28 +35,28 @@ def scan_result(gcode):
 def main():
     probe_dev = 2
     ready = 0.030
-    send_gcode(gcoder('home'))
-    warmup('pla')
+    du.send_gcode(du.gcoder('home'))
+    du.warmup('pla')
 #    time.sleep(300) # Wait for it to warm up
     i = 1
     log = 'Doing large radius calibration'
-    log_and_print(log.format(i), 'initial_calibration')
+    du.log_and_print(log.format(i), 'initial_calibration')
     t1 = timer()
     while probe_dev > ready:
-        log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
+        du.log_and_print('Doing small radius calibration #{}'.format(i), 'secondary_calibration')
         start = timer()
         result = scan_result(regularprobe)
         end = timer()
         timed = (end - start)
-        log_and_print('Probing took {} seconds'.format(timed), 'timer')
-        cal, probe_mean, probe_dev = probe_parse(result)
-        log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
+        du.log_and_print('Probing took {} seconds'.format(timed), 'timer')
+        cal, probe_mean, probe_dev = du.probe_parse(result)
+        du.log_and_print('Completed calibration #{}. Mean: {} Dev: {}'.format(i, probe_mean, probe_dev), 'secondary_calibration')
         time.sleep(30)
-    log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
-    send_gcode(gcoder('autocal'))
+    du.log_and_print('Calibration is under {} mean deviation after {} calibrations; ready to print after autocalibration.'.format(probe_dev, i), 'done_calibrating')
+    du.send_gcode(du.gcoder('autocal'))
     t2 = timer
-    time = (t2 - t1)
-    log_and_print('Calibration took {} seconds'.format(time), 'timer')
+    calibration_time = (t2 - t1)
+    du.log_and_print('Calibration took {} seconds'.format(calibration_time), 'timer')
 
 
 main()
