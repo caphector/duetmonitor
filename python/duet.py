@@ -18,6 +18,8 @@ import pysnooper
 # Calibrate then print
 # Slice while calibrating and then print
 # ??? Something computer vision ???
+# Convert to real logging
+# Create a printer object
 #
 
 ip = '192.168.1.88'
