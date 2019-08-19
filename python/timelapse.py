@@ -28,13 +28,13 @@ def main():
     known = seq
     duet, status = du.get_state()
     while du.get_duet('status'):
-        logger.warning(json.dumps(duet), 'json')
+        logger.warning(json.dumps(duet))
         layer = du.get_duet('currentLayer')
         seq = du.get_duet('seq')
         if layer > inc_layer:
             du.take_photo(duet)
             inc_layer = du.get_duet('currentLayer')
-            logger.info('Took photo for layer{}'.format(str(layer)), 'timelapse')
+            logger.info('Took photo for layer{}'.format(str(layer)))
         if seq > known:
             reply = requests.get(baseurl + 'rr_reply')
             logger.info(reply.text, 'reply')
