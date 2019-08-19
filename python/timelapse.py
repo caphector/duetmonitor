@@ -15,8 +15,6 @@ home = expanduser("~")
 output = home + '/duetlog'
 log = open(output, 'a')
 
-logging.basicconfig(filename=output, level=logging.WARNING)
-
 # @pysnooper.snoop()
 
 logger = logging.getLogger('duet-log')
