@@ -58,13 +58,13 @@ def get_state():
     while True:
         try:
             status = requests.get(baseurl + 'rr_status?type=3')
-            if status:
-                break
         except Exception as e:
             logger.error(e, 'ConErr')
             time.sleep(0.5)
         except KeyboardInterrupt:
             exit(1)
+        else:
+            break
     duet = status.json()
     return duet, status
 
