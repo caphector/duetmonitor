@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# import json
+import json
 # import sys
 import requests
 import datetime
@@ -33,9 +33,9 @@ log = open(output, 'a')
 
 logger = logging.getLogger('duet-log')
 logfile = logging.FileHandler(output)
-logfile.setLevel(logging.WARNING)
+logfile.setLevel(logging.DEBUG)
 stdout = logging.StreamHandler()
-stdout.setLevel(logging.ERROR)
+stdout.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logfile.setFormatter(formatter)
 stdout.setFormatter(formatter)
@@ -66,7 +66,7 @@ def get_state():
     except KeyboardInterrupt:
         exit(1)
     duet = status.json()
-#    print('Duet is: {}\nStatus is: {}'.format(duet, status))
+    # print('Duet is: {}\nStatus is: {}'.format(duet, status))
     return duet, status
 
 
@@ -93,7 +93,7 @@ def wait_until_ready(sequence):
     time.sleep(10)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
-    logger.info(message, function)
+    logger.debug(message, function)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
@@ -107,14 +107,13 @@ def wait_until_ready(sequence):
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
-    logger.debug('pausing', function)
+    logger.debug('Starting wait_until_ready for "Pause"')
     wait_until_ready(send_gcode(gcoder('pause')))
-    log_line = 'Sent pause and taking photo of '
-    logger.debug(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
     image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
     photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
-    logger.debug(photo, function)
+    log_line = 'Pause sent; executing: {} {} '.format(image, photo)
+    logger.info(log_line, function)
     command = (photo + image)
     subprocess.run(command, stdout=subprocess.DEVNULL, shell=True)
     send_gcode(gcoder('resume'))
