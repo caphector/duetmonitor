@@ -55,16 +55,16 @@ def l_d(var):
 
 
 def get_state():
-    try:
-        status = requests.get(baseurl + 'rr_status?type=3')
-    except Exception as e:
-        # pr = l_d(e)
-        # print(pr)
-        logger.error(e, 'ConErr')
-        time.sleep(0.5)
-        pass
-    except KeyboardInterrupt:
-        exit(1)
+    while True:
+        try:
+            status = requests.get(baseurl + 'rr_status?type=3')
+        except Exception as e:
+            logger.error(e, 'ConErr')
+            time.sleep(0.5)
+        except KeyboardInterrupt:
+            exit(1)
+        else:
+            break
     duet = status.json()
     # print('Duet is: {}\nStatus is: {}'.format(duet, status))
     return duet, status
