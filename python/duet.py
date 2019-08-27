@@ -32,15 +32,17 @@ output = home + '/duetlog'
 log = open(output, 'a')
 
 logger = logging.getLogger('duet-log')
-logfile = logging.FileHandler(output)
-logfile.setLevel(logging.DEBUG)
-stdout = logging.StreamHandler()
-stdout.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logfile.setFormatter(formatter)
-stdout.setFormatter(formatter)
-logger.addHandler(logfile)
-logger.addHandler(stdout)
+logging.basicConfig(filename=output,
+                    filemode='a',
+                    level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
+
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+console.setFormatter(formatter)
+logging.getLogger('duet-log').addHandler(console)
 
 
 def l_d(var):
@@ -135,7 +137,7 @@ def gcoder(word):
         "less_probe": "M558 P4 H3 I1 R1 A1 B1",
         "home": "G28",
         "autocal": "G32",
-        "probe": "G30 P"  # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
+        "probe": "G30 P"  # Probe syntax G30 P# X# Y# Z-99999 to P9 And send S-1
     }
     return gcodes[word]
 
