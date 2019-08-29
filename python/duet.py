@@ -86,20 +86,19 @@ def duet_logger(log_data, tag):
 
 
 def wait_until_ready(sequence):
-    function = 'wait_until_ready'
     before = sequence
-    logger.debug(str(sequence), function)
+    logger.debug(str(sequence))
     busy = {'B', 'P'}
     while get_duet('status') in busy:
         time.sleep(.5)
-    time.sleep(10)
+    time.sleep(6)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
-    logger.debug(message, function)
+    logger.debug(message)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
-        logger.info(data, function)
+        logger.info(data)
         if data:
             return data
 
@@ -113,7 +112,7 @@ def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 2
     wait_until_ready(send_gcode(gcoder('pause')))
     os.chdir(dir)
     image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
-    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
+    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download --force-overwrite'
     log_line = 'Pause sent; executing: {} {} '.format(image, photo)
     logger.info(log_line, function)
     command = (photo + image)
@@ -198,7 +197,7 @@ def warmup(material):
 def probe_parse(results):
     spaces = results.count(' ')
     results = results.replace(',', '')
-#    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
+    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
     if spaces == 22:  # 30 P4 X-108.24 Y-62.5 Z-99999
         macro = shadow_macro('sprobe')
     elif spaces == 19:
@@ -210,7 +209,7 @@ def probe_parse(results):
     Zcoords = list(map(float, Zcoords))
     probe_mean = float(split[-5])
     probe_dev = float(split[-1])
-    logger.debug(coord_order, 'parse-coords-xyz')
+    logger.debug(coord_order)
     Xcoords, Ycoords = parse_macro(macro)
     cal = zip(Xcoords, Ycoords, Zcoords)
     #    for line in list(cal):
