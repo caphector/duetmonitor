@@ -100,20 +100,19 @@ def duet_logger(log_data, tag):
 
 
 def wait_until_ready(sequence):
-    function = 'wait_until_ready'
     before = sequence
-    logger.debug(str(sequence), function)
+    logger.debug(str(sequence))
     busy = {'B', 'P'}
     while get_duet('status') in busy:
         time.sleep(.5)
-    time.sleep(10)
+    time.sleep(6)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
-    logger.info(message, function)
+    logger.debug(message)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
-        logger.info(data, function)
+        logger.info(data)
         if data:
             return data
 
@@ -129,8 +128,9 @@ def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 2
     logger.debug(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
     image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
-    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
-    logger.debug(photo, function)
+    photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download --force-overwrite'
+    log_line = 'Pause sent; executing: {} {} '.format(image, photo)
+    logger.info(log_line, function)
     command = (photo + image)
     subprocess.run(command, stdout=subprocess.DEVNULL, shell=True)
     send_gcode(gcoder('resume'))
