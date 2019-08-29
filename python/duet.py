@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json
+# import json
 # import sys
 import requests
 import datetime
@@ -32,17 +32,31 @@ output = home + '/duetlog'
 log = open(output, 'a')
 
 logger = logging.getLogger('duet-log')
-logging.basicConfig(filename=output,
-                    filemode='a',
-                    level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
+logfile = logging.FileHandler(output)
+logfile.setLevel(logging.WARNING)
+stdout = logging.StreamHandler()
+stdout.setLevel(logging.CRITICAL)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logfile.setFormatter(formatter)
+stdout.setFormatter(formatter)
+logger.addHandler(logfile)
+logger.addHandler(stdout)
 
-console = logging.StreamHandler()
-console.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-console.setFormatter(formatter)
-logging.getLogger('duet-log').addHandler(console)
+
+probe = '''G30 P0 X-87.60 Y-53.00 Z-99999 ; X tower
+G30 P1 X0.00 Y-102.00 Z-99999   ; between X-Y towers
+G30 P2 X85.60 Y-49.00 Z-99999   ; Y tower
+G30 P3 X82.60 Y51.00 Z-99999    ; between Y-Z towers
+G30 P4 X1.00 Y101.00 Z-99999    ; Z tower
+G30 P5 X-88.60 Y53.00 Z-99999   ; between Z-X towers
+G30 P6 X-43.30 Y-25.00 Z-99999  ; X tower
+G30 P7 X0.00 Y-50.00 Z-99999    ; between X-Y towers
+G30 P8 X43.30 Y-25.00 Z-99999   ; Y tower
+G30 P9 X43.30 Y25.00 Z-99999    ; between Y-Z towers
+G30 P10 X0.00 Y50.00 Z-99999    ; Z tower
+G30 P11 X-43.30 Y25.00 Z-99999  ; between Z-X towers
+G30 P12 X0 Y0 Z-99999 S-1       ; center and auto-calibrate 6 factors
+G1X0.00 Y-102.00 Z2'''
 
 
 def l_d(var):
@@ -57,18 +71,18 @@ def l_d(var):
 
 
 def get_state():
-    while True:
-        try:
-            status = requests.get(baseurl + 'rr_status?type=3')
-        except Exception as e:
-            logger.error(e, 'ConErr')
-            time.sleep(0.5)
-        except KeyboardInterrupt:
-            exit(1)
-        else:
-            break
+    try:
+        status = requests.get(baseurl + 'rr_status?type=3')
+    except Exception as e:
+        # pr = l_d(e)
+        # print(pr)
+        logger.error(e, 'ConErr')
+        time.sleep(0.5)
+        pass
+    except KeyboardInterrupt:
+        exit(1)
     duet = status.json()
-    # print('Duet is: {}\nStatus is: {}'.format(duet, status))
+#    print('Duet is: {}\nStatus is: {}'.format(duet, status))
     return duet, status
 
 
@@ -95,7 +109,7 @@ def wait_until_ready(sequence):
     time.sleep(10)
     sequence = get_duet('seq')
     message = 'Sequence is now {} and was {}'.format(sequence, before)
-    logger.debug(message, function)
+    logger.info(message, function)
     if sequence > before:
         reply = requests.get(baseurl + 'rr_reply')
         data = reply.text
@@ -109,13 +123,14 @@ def wait_until_ready(sequence):
 def take_photo(duet):  # Compile timelapse: avconv -y -r 25 -i Prusa-%d.jpg -r 25 -vcodec copy -crf 20 -g 6 compiled.mp4
     function = 'take_photo'
     dir = os.environ['HOME'] + targetdir
-    logger.debug('Starting wait_until_ready for "Pause"')
+    logger.debug('pausing', function)
     wait_until_ready(send_gcode(gcoder('pause')))
+    log_line = 'Sent pause and taking photo of '
+    logger.debug(log_line + str(get_duet('currentLayer')), function)
     os.chdir(dir)
     image = ' --filename=' + str(get_duet('currentLayer')) + '.jpg'
     photo = '/usr/bin/sudo /usr/bin/gphoto2 --wait-event=350ms --capture-image-and-download'
-    log_line = 'Pause sent; executing: {} {} '.format(image, photo)
-    logger.info(log_line, function)
+    logger.debug(photo, function)
     command = (photo + image)
     subprocess.run(command, stdout=subprocess.DEVNULL, shell=True)
     send_gcode(gcoder('resume'))
@@ -137,39 +152,9 @@ def gcoder(word):
         "less_probe": "M558 P4 H3 I1 R1 A1 B1",
         "home": "G28",
         "autocal": "G32",
-        "probe": "G30 P"  # Probe syntax G30 P# X# Y# Z-99999 to P9 And send S-1
+        "probe": "G30 P"  # Probe syntax G30 P# X# Y# Z-99999 to P9 And sned S-1
     }
     return gcodes[word]
-
-
-def shadow_macro(macro):
-    macros = {
-        "lprobe": """G30 P0 X0 Y125 Z-99999
-G30 P1 X108.24 Y62.5 Z-99999
-G30 P2 X108.24 Y-62.5 Z-99999
-G30 P3 X0 Y-125 Z-99999
-G30 P4 X-108.24 Y-62.5 Z-99999
-G30 P5 X-108.24 Y62.5 Z-99999
-G30 P6 X0 Y62.5 Z-99999
-G30 P7 X54.13 Y-31.25 Z-99999
-G30 P8 X-54.13 Y-31.25 Z-99999
-G30 P9 X0 Y0 Z-99999 S-1""",
-        "sprobe": '''G30 P0 X-87.60 Y-53.00 Z-99999	; X tower
-G30 P1 X0.00 Y-102.00 Z-99999	; between X-Y towers
-G30 P2 X85.60 Y-49.00 Z-99999	; Y tower
-G30 P3 X82.60 Y51.00 Z-99999	; between Y-Z towers
-G30 P4 X1.00 Y101.00 Z-99999	; Z tower
-G30 P5 X-88.60 Y53.00 Z-99999	; between Z-X towers
-G30 P6 X-43.30 Y-25.00 Z-99999	; X tower
-G30 P7 X0.00 Y-50.00 Z-99999	; between X-Y towers
-G30 P8 X43.30 Y-25.00 Z-99999	; Y tower
-G30 P9 X43.30 Y25.00 Z-99999	; between Y-Z towers
-G30 P10 X0.00 Y50.00 Z-99999	; Z tower
-G30 P11 X-43.30 Y25.00 Z-99999	; between Z-X towers
-G30 P12 X0 Y0 Z-99999 S-1		; center and auto-calibrate 6 factors
-G1 X-87.60 Y-53.00 Z4 '''
-    }
-    return macros[macro]
 
 
 def gcode_encode(line):
@@ -198,11 +183,9 @@ def warmup(material):
 def probe_parse(results):
     spaces = results.count(' ')
     results = results.replace(',', '')
-#    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
+    coord_order = 'Xcoord, Ycoord, Zcoord'  # Coord format - match here - G
     if spaces == 22:  # 30 P4 X-108.24 Y-62.5 Z-99999
-        macro = shadow_macro('sprobe')
-    elif spaces == 19:
-        macro = shadow_macro('lprobe')
+        macro = probe
     else:
         return None, None, None
     split = results.split()
@@ -210,7 +193,7 @@ def probe_parse(results):
     Zcoords = list(map(float, Zcoords))
     probe_mean = float(split[-5])
     probe_dev = float(split[-1])
-    logger.debug(coord_order, 'parse-coords-xyz')
+    logger.debug(coord_order)
     Xcoords, Ycoords = parse_macro(macro)
     cal = zip(Xcoords, Ycoords, Zcoords)
     #    for line in list(cal):
